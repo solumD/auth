@@ -1,2 +1,2 @@
-# microservices_course_boilerplate
-# auth
+# microservices_boilerplate
+
