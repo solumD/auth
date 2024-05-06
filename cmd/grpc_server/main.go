@@ -10,6 +10,7 @@ import (
 	desc "github.com/solumD/auth/pkg/auth_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -19,6 +20,15 @@ const (
 
 type server struct {
 	desc.UnimplementedAuthV1Server
+}
+
+func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
+	user := req.GetInfo()
+	log.Printf("Name: %s, Email: %s, Password: %s, Role: %d", user.Info.Name, user.Info.Email, req.Info.GetPassword(), user.Info.Role)
+
+	return &desc.CreateResponse{
+		Id: gofakeit.Int64(),
+	}, nil
 }
 
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
@@ -36,6 +46,17 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 			UpdatedAt: timestamppb.New(gofakeit.Date()),
 		},
 	}, nil
+}
+
+func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
+	user := req.GetInfo()
+	log.Printf("Id: %d, Name: %s, Email %s", req.GetId(), user.Name, user.Email)
+	return nil, nil
+}
+
+func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
+	log.Printf("Id: %d", req.GetId())
+	return nil, nil
 }
 
 func main() {
