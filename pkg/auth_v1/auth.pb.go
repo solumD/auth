@@ -208,7 +208,7 @@ type CreateUserInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Info            *UserInfo `protobuf:"bytes,1,opt,name=user_info,proto3" json:"info,omitempty"`
+	Info            *UserInfo `protobuf:"bytes,1,opt,name=info,proto3" json:"info,omitempty"`
 	Password        string    `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	PasswordConfirm string    `protobuf:"bytes,3,opt,name=password_confirm,json=passwordConfirm,proto3" json:"password_confirm,omitempty"`
 }
