@@ -36,7 +36,7 @@ func (s *server) Create(_ context.Context, req *desc.CreateRequest) (*desc.Creat
 }
 
 func (s *server) Get(_ context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	log.Printf("[Get] request data |\nid: %v", req.GetId())
+	log.Printf("[Get] request data |\nid: %v", req.Id)
 
 	return &desc.GetResponse{
 		User: &desc.User{
