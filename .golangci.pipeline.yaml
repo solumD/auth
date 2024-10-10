@@ -49,3 +49,4 @@ issues:
     - exported func .* returns unexported type .*, which can be annoying to use
     - should have a package comment
     - don't use an underscore in package name
+    - G115
