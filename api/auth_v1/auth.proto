@@ -9,10 +9,10 @@ import "google/protobuf/wrappers.proto";
 option go_package = "github.com/solumD/auth/pkg/auth_v1;auth_v1";
 
 service AuthV1 {
-    rpc Create(CreateRequest) returns (CreateResponse);
-    rpc Get(GetRequest) returns (GetResponse);
-    rpc Update(UpdateRequest) returns (google.protobuf.Empty);
-    rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+    rpc GetUser(GetUserRequest) returns (GetUserResponse);
+    rpc UpdateUser(UpdateUserRequest) returns (google.protobuf.Empty);
+    rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
 }
 
 enum Role {
@@ -46,27 +46,27 @@ message UpdateUserInfo {
     Role role = 3;
 }
 
-message CreateRequest {
+message CreateUserRequest {
     CreateUserInfo info = 1;
 }
 
-message CreateResponse {
+message CreateUserResponse {
     int64 id = 1;
 }
 
-message GetRequest {
+message GetUserRequest {
     int64 id = 1;
 }
 
-message GetResponse {
+message GetUserResponse {
     User user = 1;
 }
 
-message UpdateRequest {
+message UpdateUserRequest {
     int64 id = 1;
     UpdateUserInfo info = 2;
 }
 
-message DeleteRequest {
+message DeleteUserRequest {
     int64 id = 1;
 }
