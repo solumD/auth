@@ -22,4 +22,3 @@ services:
     restart: on-failure
     environment:
       DB_HOST: pg
-
