@@ -24,6 +24,7 @@ func NewPGConfig() (PGConfig, error) {
 	}, nil
 }
 
+// DSN returns a full database's connection string
 func (cfg *pgConfig) DSN() string {
 	return cfg.dsn
 }

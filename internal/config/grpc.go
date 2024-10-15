@@ -33,6 +33,7 @@ func NewGRPCConfig() (GRPCConfig, error) {
 	}, nil
 }
 
+// Address returns a full address of a server
 func (cfg *grpcConfig) Address() string {
 	return net.JoinHostPort(cfg.host, cfg.port)
 }

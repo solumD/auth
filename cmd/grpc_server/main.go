@@ -2,16 +2,19 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"flag"
 	"log"
 	"net"
+	"time"
 
-	"github.com/brianvoe/gofakeit/v7"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/solumD/auth/internal/config"
 	desc "github.com/solumD/auth/pkg/auth_v1"
 )
@@ -24,7 +27,6 @@ func init() {
 
 func main() {
 	flag.Parse()
-	//_ := context.Background()
 
 	err := config.Load(configPath)
 	if err != nil {
@@ -36,19 +38,26 @@ func main() {
 		log.Fatalf("failed to get grpc config: %v", err)
 	}
 
-	/*pgConfig, err := config.NewPGConfig()
-	if err != nil {
-		log.Fatalf("failed to get pg config: %v", err)
-	}*/
-
 	lis, err := net.Listen("tcp", grpcConfig.Address())
 	if err != nil {
 		log.Fatalf("failed to listen: %s", err)
 	}
 
+	pgConfig, err := config.NewPGConfig()
+	if err != nil {
+		log.Fatalf("failed to get pg config: %v", err)
+	}
+
+	ctx := context.Background()
+	pgPool, err := pgxpool.Connect(ctx, pgConfig.DSN())
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer pgPool.Close()
+
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterAuthV1Server(s, &server{})
+	desc.RegisterAuthV1Server(s, &server{pool: pgPool})
 
 	log.Printf("server listening at %v", lis.Addr())
 
@@ -59,11 +68,14 @@ func main() {
 
 type server struct {
 	desc.UnimplementedAuthV1Server
+	pool *pgxpool.Pool
 }
 
 // CreateUser creates new user
-func (s *server) CreateUser(_ context.Context, req *desc.CreateUserRequest) (*desc.CreateUserResponse, error) {
-	log.Printf("[Create] request data |\nname: %v, email: %v, password: %v, password_confirm: %v, role: %v",
+func (s *server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.CreateUserResponse, error) {
+	fn := "CreateUser"
+	log.Printf("[%s] request data |\nname: %v, email: %v, password: %v, password_confirm: %v, role: %v",
+		fn,
 		req.Info.Info.Name,
 		req.Info.Info.Email,
 		req.Info.Password,
@@ -71,37 +83,143 @@ func (s *server) CreateUser(_ context.Context, req *desc.CreateUserRequest) (*de
 		req.Info.Info.Role,
 	)
 
+	builderInserUser := sq.Insert("users").
+		PlaceholderFormat(sq.Dollar).
+		Columns("username", "email", "password", "role", "created_at").
+		Values(req.Info.Info.Name, req.Info.Info.Email,
+			req.Info.Password, req.Info.Info.GetRole(), time.Now()).
+		Suffix("RETURNING id")
+
+	query, args, err := builderInserUser.ToSql()
+	if err != nil {
+		log.Printf("%s: failed to create builder: %v", fn, err)
+		return nil, err
+	}
+
+	var userID int64
+	err = s.pool.QueryRow(ctx, query, args...).Scan(&userID)
+	if err != nil {
+		log.Printf("%s: failed to insert user: %v", fn, err)
+		return nil, err
+	}
+
+	log.Printf("%s: inserted user with id: %d", fn, userID)
 	return &desc.CreateUserResponse{
-		Id: gofakeit.Int64(),
+		Id: userID,
 	}, nil
 }
 
 // GetUser returns user by id
-func (s *server) GetUser(_ context.Context, req *desc.GetUserRequest) (*desc.GetUserResponse, error) {
-	log.Printf("[Get] request data |\nid: %v", req.Id)
+func (s *server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.GetUserResponse, error) {
+	fn := "GetUser"
+	log.Printf("[%s] request data |\nid: %v", fn, req.Id)
+
+	builderGetUser := sq.Select("id", "username", "email", "role", "created_at", "updated_at").
+		From("users").
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{"id": req.GetId()})
+
+	query, args, err := builderGetUser.ToSql()
+	if err != nil {
+		log.Printf("%s: failed to create builder: %v", fn, err)
+		return nil, err
+	}
+
+	rows, err := s.pool.Query(ctx, query, args...)
+	if err != nil {
+		log.Printf("%s: failed to select user: %v", fn, err)
+		return nil, err
+	}
+
+	var userID int64
+	var username, email string
+	var role int32
+	var createdAt time.Time
+	var updatedAt sql.NullTime
+
+	for rows.Next() {
+		err = rows.Scan(&userID, &username, &email, &role, &createdAt, &updatedAt)
+		if err != nil {
+			log.Printf("%s: failed to scan user: %v", fn, err)
+			return nil, err
+		}
+	}
 
 	return &desc.GetUserResponse{
 		User: &desc.User{
-			Id: gofakeit.Int64(),
+			Id: userID,
 			Info: &desc.UserInfo{
-				Name:  gofakeit.Name(),
-				Email: gofakeit.Email(),
-				Role:  desc.Role(gofakeit.Number(0, 2)),
+				Name:  username,
+				Email: email,
+				Role:  desc.Role(role),
 			},
-			CreatedAt: timestamppb.New(gofakeit.Date()),
-			UpdatedAt: timestamppb.New(gofakeit.Date()),
+			CreatedAt: timestamppb.New(createdAt),
+			UpdatedAt: timestamppb.New(updatedAt.Time),
 		},
 	}, nil
 }
 
 // UpdateUser updates user's data by id
-func (s *server) UpdateUser(_ context.Context, req *desc.UpdateUserRequest) (*emptypb.Empty, error) {
-	log.Printf("[Update] request data |\nid: %v, name: %v, email: %v, role: %v", req.Id, req.Info.Name, req.Info.Email, req.Info.Role)
-	return nil, nil
+func (s *server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*emptypb.Empty, error) {
+	fn := "UpdateUser"
+	log.Printf("[%s] request data |\nid: %v, name: %v, email: %v, role: %v", fn, req.Id, req.Info.Name, req.Info.Email, req.Info.Role)
+
+	builderUpdateUser := sq.Update("users").
+		PlaceholderFormat(sq.Dollar)
+
+	if len(req.Info.Name.Value) > 0 {
+		builderUpdateUser = builderUpdateUser.Set("username", req.Info.GetName().Value)
+	}
+
+	if len(req.Info.Email.Value) > 0 {
+		builderUpdateUser = builderUpdateUser.Set("email", req.Info.GetEmail().Value)
+	}
+
+	if req.Info.GetRole() >= 0 && req.Info.GetRole() <= 2 {
+		builderUpdateUser = builderUpdateUser.Set("role", req.Info.GetRole())
+	}
+
+	builderUpdateUser = builderUpdateUser.Set("updated_at", time.Now()).
+		Where(sq.Eq{"id": req.GetId()})
+
+	query, args, err := builderUpdateUser.ToSql()
+	if err != nil {
+		log.Printf("%s: failed to create builder: %v", fn, err)
+		return nil, err
+	}
+
+	res, err := s.pool.Exec(ctx, query, args...)
+	if err != nil {
+		log.Printf("%s: failed to update user: %v", fn, err)
+		return nil, err
+	}
+
+	log.Printf("%s updated %d rows", fn, res.RowsAffected())
+	return &emptypb.Empty{}, nil
 }
 
 // DeleteUser deletes user by id
-func (s *server) DeleteUser(_ context.Context, req *desc.DeleteUserRequest) (*emptypb.Empty, error) {
-	log.Printf("[Delete] request data |\nid: %v", req.Id)
-	return nil, nil
+func (s *server) DeleteUser(ctx context.Context, req *desc.DeleteUserRequest) (*emptypb.Empty, error) {
+	fn := "DeleteUser"
+	log.Printf("[%s] request data |\nid: %v", fn, req.Id)
+
+	builderDeletUser := sq.Delete("users").
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{"id": req.GetId()})
+
+	query, args, err := builderDeletUser.ToSql()
+	if err != nil {
+		log.Printf("%s: failed to create builder: %v", fn, err)
+		return nil, err
+	}
+
+	res, err := s.pool.Exec(ctx, query, args...)
+	if err != nil {
+		log.Printf("%s: failed to delete user: %v", fn, err)
+		return nil, err
+	}
+
+	log.Printf("%s: deleted %d row", fn, res.RowsAffected())
+
+	return &emptypb.Empty{}, nil
 }
