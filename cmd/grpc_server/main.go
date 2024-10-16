@@ -83,14 +83,14 @@ func (s *server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 		req.GetRole(),
 	)
 
-	builderInserUser := sq.Insert("users").
+	builderInsertUser := sq.Insert("users").
 		PlaceholderFormat(sq.Dollar).
 		Columns("username", "email", "password", "role", "created_at").
 		Values(req.Name, req.Email,
 			req.Password, req.GetRole(), time.Now()).
 		Suffix("RETURNING id")
 
-	query, args, err := builderInserUser.ToSql()
+	query, args, err := builderInsertUser.ToSql()
 	if err != nil {
 		log.Printf("%s: failed to create builder: %v", fn, err)
 		return nil, err
@@ -145,6 +145,7 @@ func (s *server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.G
 		}
 	}
 
+	log.Printf("%s: selected user %d", fn, req.Id)
 	return &desc.GetUserResponse{
 		Id:        userID,
 		Name:      username,
@@ -190,7 +191,7 @@ func (s *server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 		return nil, err
 	}
 
-	log.Printf("%s updated %d rows", fn, res.RowsAffected())
+	log.Printf("%s: updated %d rows", fn, res.RowsAffected())
 	return &emptypb.Empty{}, nil
 }
 
