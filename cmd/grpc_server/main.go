@@ -74,20 +74,20 @@ type server struct {
 // CreateUser creates new user
 func (s *server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.CreateUserResponse, error) {
 	fn := "CreateUser"
-	log.Printf("[%s] request data |\nname: %v, email: %v, password: %v, password_confirm: %v, role: %v",
+	log.Printf("[%s] request data | name: %v, email: %v, password: %v, password_confirm: %v, role: %v",
 		fn,
-		req.Info.Info.Name,
-		req.Info.Info.Email,
-		req.Info.Password,
-		req.Info.PasswordConfirm,
-		req.Info.Info.Role,
+		req.Name,
+		req.Email,
+		req.Password,
+		req.PasswordConfirm,
+		req.GetRole(),
 	)
 
 	builderInserUser := sq.Insert("users").
 		PlaceholderFormat(sq.Dollar).
 		Columns("username", "email", "password", "role", "created_at").
-		Values(req.Info.Info.Name, req.Info.Info.Email,
-			req.Info.Password, req.Info.Info.GetRole(), time.Now()).
+		Values(req.Name, req.Email,
+			req.Password, req.GetRole(), time.Now()).
 		Suffix("RETURNING id")
 
 	query, args, err := builderInserUser.ToSql()
@@ -112,7 +112,7 @@ func (s *server) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*
 // GetUser returns user by id
 func (s *server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.GetUserResponse, error) {
 	fn := "GetUser"
-	log.Printf("[%s] request data |\nid: %v", fn, req.Id)
+	log.Printf("[%s] request data | id: %v", fn, req.Id)
 
 	builderGetUser := sq.Select("id", "username", "email", "role", "created_at", "updated_at").
 		From("users").
@@ -146,37 +146,33 @@ func (s *server) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.G
 	}
 
 	return &desc.GetUserResponse{
-		User: &desc.User{
-			Id: userID,
-			Info: &desc.UserInfo{
-				Name:  username,
-				Email: email,
-				Role:  desc.Role(role),
-			},
-			CreatedAt: timestamppb.New(createdAt),
-			UpdatedAt: timestamppb.New(updatedAt.Time),
-		},
+		Id:        userID,
+		Name:      username,
+		Email:     email,
+		Role:      desc.Role(role),
+		CreatedAt: timestamppb.New(createdAt),
+		UpdatedAt: timestamppb.New(updatedAt.Time),
 	}, nil
 }
 
 // UpdateUser updates user's data by id
 func (s *server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*emptypb.Empty, error) {
 	fn := "UpdateUser"
-	log.Printf("[%s] request data |\nid: %v, name: %v, email: %v, role: %v", fn, req.Id, req.Info.Name, req.Info.Email, req.Info.Role)
+	log.Printf("[%s] request data | id: %v, name: %v, email: %v, role: %v", fn, req.Id, req.Name, req.Email, req.Role)
 
 	builderUpdateUser := sq.Update("users").
 		PlaceholderFormat(sq.Dollar)
 
-	if len(req.Info.Name.Value) > 0 {
-		builderUpdateUser = builderUpdateUser.Set("username", req.Info.GetName().Value)
+	if len(req.Name.Value) > 0 {
+		builderUpdateUser = builderUpdateUser.Set("username", req.GetName().Value)
 	}
 
-	if len(req.Info.Email.Value) > 0 {
-		builderUpdateUser = builderUpdateUser.Set("email", req.Info.GetEmail().Value)
+	if len(req.Email.Value) > 0 {
+		builderUpdateUser = builderUpdateUser.Set("email", req.GetEmail().Value)
 	}
 
-	if req.Info.GetRole() >= 0 && req.Info.GetRole() <= 2 {
-		builderUpdateUser = builderUpdateUser.Set("role", req.Info.GetRole())
+	if req.GetRole() >= 0 && req.GetRole() <= 2 {
+		builderUpdateUser = builderUpdateUser.Set("role", req.GetRole())
 	}
 
 	builderUpdateUser = builderUpdateUser.Set("updated_at", time.Now()).
@@ -201,7 +197,7 @@ func (s *server) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*
 // DeleteUser deletes user by id
 func (s *server) DeleteUser(ctx context.Context, req *desc.DeleteUserRequest) (*emptypb.Empty, error) {
 	fn := "DeleteUser"
-	log.Printf("[%s] request data |\nid: %v", fn, req.Id)
+	log.Printf("[%s] request data | id: %v", fn, req.Id)
 
 	builderDeletUser := sq.Delete("users").
 		PlaceholderFormat(sq.Dollar).
