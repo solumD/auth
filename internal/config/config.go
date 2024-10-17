@@ -15,10 +15,12 @@ func Load(path string) error {
 	return nil
 }
 
+// GRPCConfig is interface of a grpc config
 type GRPCConfig interface {
 	Address() string
 }
 
+// PGConfig is interface of a postgres config
 type PGConfig interface {
 	DSN() string
 }
