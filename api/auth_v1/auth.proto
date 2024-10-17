@@ -21,33 +21,12 @@ enum Role {
     ADMIN = 2;
 }
 
-message UserInfo {
+message CreateUserRequest {
     string name = 1;
     string email = 2;
-    Role role = 3;
-}
-
-message User {
-    int64 id = 1;
-    UserInfo info = 2;
-    google.protobuf.Timestamp created_at = 3;
-    google.protobuf.Timestamp updated_at = 4;
-}
-
-message CreateUserInfo {
-    UserInfo info = 1;
-    string password = 2;
-    string password_confirm = 3; 
-}
-
-message UpdateUserInfo {
-    google.protobuf.StringValue name = 1;
-    google.protobuf.StringValue email = 2;
-    Role role = 3;
-}
-
-message CreateUserRequest {
-    CreateUserInfo info = 1;
+    string password = 3;
+    string password_confirm = 4;
+    Role role = 5;
 }
 
 message CreateUserResponse {
@@ -59,12 +38,19 @@ message GetUserRequest {
 }
 
 message GetUserResponse {
-    User user = 1;
+    int64 id = 1;
+    string name = 2;
+    string email = 3;
+    Role role = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
 }
 
 message UpdateUserRequest {
     int64 id = 1;
-    UpdateUserInfo info = 2;
+    google.protobuf.StringValue name = 2;
+    google.protobuf.StringValue email = 3;
+    Role role = 4;
 }
 
 message DeleteUserRequest {
