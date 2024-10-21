@@ -38,8 +38,8 @@ func NewRepository(db *pgxpool.Pool) repository.AuthRepository {
 func (r *repo) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 	builderInsertUser := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Columns(nameColumn, emailColumn, passwordColumn, roleColumn, createdAtColumn).
-		Values(user.Name, user.Email, user.Password, user.Role, user.CreatedAt).
+		Columns(nameColumn, emailColumn, passwordColumn, roleColumn).
+		Values(user.Name, user.Email, user.Password, user.Role).
 		Suffix("RETURNING id")
 
 	query, args, err := builderInsertUser.ToSql()

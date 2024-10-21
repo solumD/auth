@@ -21,3 +21,22 @@ func ToUserFromService(user *model.User) *desc.GetUserResponse {
 		UpdatedAt: updatedAt,
 	}
 }
+
+func ToUserFromDescUser(user *desc.CreateUserRequest) *model.User {
+	return &model.User{
+		Name:            user.Name,
+		Email:           user.Email,
+		Password:        user.Password,
+		PasswordConfirm: user.PasswordConfirm,
+		Role:            int64(user.Role),
+	}
+}
+
+func ToUserFromDescUpdate(user *desc.UpdateUserRequest) *model.UserUpdate {
+	return &model.UserUpdate{
+		ID:    user.GetId(),
+		Name:  user.GetName().Value,
+		Email: user.GetEmail().Value,
+		Role:  int64(user.GetRole()),
+	}
+}
