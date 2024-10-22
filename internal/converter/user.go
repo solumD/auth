@@ -6,7 +6,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func ToUserFromService(user *model.User) *desc.GetUserResponse {
+func ToDescUserFromService(user *model.User) *desc.GetUserResponse {
 	var updatedAt *timestamppb.Timestamp
 	if user.UpdatedAt.Valid {
 		updatedAt = timestamppb.New(user.UpdatedAt.Time)

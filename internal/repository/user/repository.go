@@ -17,7 +17,7 @@ const (
 	tableName = "users"
 
 	idColumn        = "id"
-	nameColumn      = "username"
+	nameColumn      = "name"
 	emailColumn     = "email"
 	passwordColumn  = "password"
 	roleColumn      = "role"

@@ -13,5 +13,5 @@ func (i *Implementation) GetUser(ctx context.Context, req *desc.GetUserRequest) 
 		return nil, err
 	}
 
-	return converter.ToUserFromService(user), nil
+	return converter.ToDescUserFromService(user), nil
 }
