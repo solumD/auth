@@ -2,9 +2,11 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/repository"
@@ -85,6 +87,25 @@ func (r *repo) GetUser(ctx context.Context, userID int64) (*model.User, error) {
 }
 
 func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb.Empty, error) {
+	builderGetUser := sq.Select(nameColumn).
+		From(tableName).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{idColumn: user.ID})
+
+	query, args, err := builderGetUser.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	row := r.db.QueryRow(ctx, query, args...)
+	var name string
+	err = row.Scan(&name)
+	if err == pgx.ErrNoRows {
+		return nil, fmt.Errorf("user with id %d doesn't exist", user.ID)
+	} else if err != nil {
+		return nil, err
+	}
+
 	builderUpdateUser := sq.Update(tableName).
 		PlaceholderFormat(sq.Dollar)
 
@@ -103,7 +124,7 @@ func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb
 	builderUpdateUser = builderUpdateUser.Set(updatedAtColumn, time.Now()).
 		Where(sq.Eq{idColumn: user.ID})
 
-	query, args, err := builderUpdateUser.ToSql()
+	query, args, err = builderUpdateUser.ToSql()
 	if err != nil {
 		return nil, err
 	}
