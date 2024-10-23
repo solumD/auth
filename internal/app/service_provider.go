@@ -4,9 +4,11 @@ import (
 	"context"
 	"log"
 
-	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/solumD/auth/closer"
 	authApi "github.com/solumD/auth/internal/api/user"
+	"github.com/solumD/auth/internal/client/db"
+	"github.com/solumD/auth/internal/client/db/pg"
+	"github.com/solumD/auth/internal/client/db/transaction"
+	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/repository"
 	authRepo "github.com/solumD/auth/internal/repository/user"
@@ -18,11 +20,12 @@ type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
 
-	pgPool         *pgxpool.Pool
+	dbClient  db.Client
+	txManager db.TxManager
+
 	authRepository repository.AuthRepository
 	authService    service.AuthService
-
-	authImpl *authApi.Implementation
+	authImpl       *authApi.Implementation
 }
 
 func NewServiceProvider() *serviceProvider {
@@ -55,32 +58,36 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
-func (s *serviceProvider) PgPool(ctx context.Context) *pgxpool.Pool {
-	if s.pgPool == nil {
-		pool, err := pgxpool.Connect(ctx, s.PGConfig().DSN())
+func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
+	if s.dbClient == nil {
+		cl, err := pg.New(ctx, s.PGConfig().DSN())
 		if err != nil {
-			log.Fatalf("failed to connect to database: %v", err)
+			log.Fatalf("failed to create a db client: %v", err)
 		}
 
-		err = pool.Ping(ctx)
+		err = cl.DB().Ping(ctx)
 		if err != nil {
 			log.Fatalf("ping error: %v", err)
 		}
+		closer.Add(cl.Close)
 
-		closer.Add(func() error {
-			pool.Close()
-			return nil
-		})
-
-		s.pgPool = pool
+		s.dbClient = cl
 	}
 
-	return s.pgPool
+	return s.dbClient
+}
+
+func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if s.txManager == nil {
+		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
+	}
+
+	return s.txManager
 }
 
 func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRepository {
 	if s.authRepository == nil {
-		s.authRepository = authRepo.NewRepository(s.PgPool(ctx))
+		s.authRepository = authRepo.NewRepository(s.DBClient(ctx))
 	}
 
 	return s.authRepository
@@ -88,7 +95,7 @@ func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRe
 
 func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
-		s.authService = authSrv.NewService(s.AuthReposistory(ctx))
+		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.TxManager(ctx))
 	}
 
 	return s.authService

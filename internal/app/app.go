@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/solumD/auth/closer"
+	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	desc "github.com/solumD/auth/pkg/auth_v1"
 	"google.golang.org/grpc"

@@ -7,7 +7,16 @@ import (
 )
 
 func (s *srv) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, error) {
-	_, err := s.authRepository.DeleteUser(ctx, userID)
+	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
+		var errTx error
+		_, errTx = s.authRepository.DeleteUser(ctx, userID)
+		if errTx != nil {
+			return errTx
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		return nil, err
 	}

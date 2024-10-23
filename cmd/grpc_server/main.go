@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/solumD/auth/app"
+	"github.com/solumD/auth/internal/app"
 )
 
 func main() {
