@@ -7,10 +7,11 @@ import (
 )
 
 const (
-	PlaceholderDollar   = "$"
-	PlaceholderQuestion = "?"
+	PlaceholderDollar   = "$" // PlaceholderDollar - плейсхолдер доллара
+	PlaceholderQuestion = "?" // PlaceholderQuestion - плейсхолдер вопроса
 )
 
+// Pretty преобразует БД-запрос к приятному виду для использования в логах
 func Pretty(query string, placeholder string, args ...any) string {
 	for i, param := range args {
 		var value string

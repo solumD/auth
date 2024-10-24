@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Service user model
+// User модель пользователя сервисного слоя
 type User struct {
 	ID              int64
 	Name            string
@@ -17,7 +17,7 @@ type User struct {
 	UpdatedAt       sql.NullTime
 }
 
-// Service user to update model
+// UserUpdate модель обновления пользователя сервисного слоя
 type UserUpdate struct {
 	ID    int64
 	Name  string

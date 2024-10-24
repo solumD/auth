@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// UpdateUser - отправляет запрос в сервисный слой на обновление данных пользователя
 func (i *Implementation) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*emptypb.Empty, error) {
 	_, err := i.authService.UpdateUser(ctx, converter.ToUserFromDescUpdate(req))
 	if err != nil {

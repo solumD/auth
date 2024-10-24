@@ -6,7 +6,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// ToDescUserFromService converts service user model into desc (GRPC) user model
+// ToDescUserFromService конвертирует сервисную модель пользователя в
+// в gRPC модель
 func ToDescUserFromService(user *model.User) *desc.GetUserResponse {
 	var updatedAt *timestamppb.Timestamp
 	if user.UpdatedAt.Valid {
@@ -23,7 +24,8 @@ func ToDescUserFromService(user *model.User) *desc.GetUserResponse {
 	}
 }
 
-// ToUserFromDescUser converts desc (GRPC) user model into service user model
+// ToUserFromDescUser конвертирует модель пользователя API слоя в
+// модель сервисного слоя
 func ToUserFromDescUser(user *desc.CreateUserRequest) *model.User {
 	return &model.User{
 		Name:            user.Name,
@@ -34,7 +36,8 @@ func ToUserFromDescUser(user *desc.CreateUserRequest) *model.User {
 	}
 }
 
-// ToUserFromDescUpdate converts desc (GRPC) user to update model into service user model
+// ToUserFromDescUpdate конвертирует модель обновления пользователя API слов в
+// модель сервисного слоя
 func ToUserFromDescUpdate(user *desc.UpdateUserRequest) *model.UserUpdate {
 	return &model.UserUpdate{
 		ID:    user.GetId(),

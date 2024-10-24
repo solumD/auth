@@ -8,6 +8,7 @@ import (
 	desc "github.com/solumD/auth/pkg/auth_v1"
 )
 
+// CreateUser - отправляет запрос в сервисный слой на создание пользователя
 func (i *Implementation) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.CreateUserResponse, error) {
 	userID, err := i.authService.CreateUser(ctx, converter.ToUserFromDescUser(req))
 	if err != nil {

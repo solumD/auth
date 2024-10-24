@@ -7,6 +7,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// AuthRepository - интерфейс репо слоя
 type AuthRepository interface {
 	CreateUser(ctx context.Context, user *model.User) (int64, error)
 	GetUser(ctx context.Context, userID int64) (*model.User, error)

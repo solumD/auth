@@ -6,11 +6,12 @@ import (
 	"github.com/solumD/auth/internal/model"
 )
 
+// CreateUser - отправляет запрос в репо слой на создание пользователя
 func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
-	var userId int64
+	var userID int64
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
-		userId, errTx = s.authRepository.CreateUser(ctx, user)
+		userID, errTx = s.authRepository.CreateUser(ctx, user)
 		if errTx != nil {
 			return errTx
 		}
@@ -22,5 +23,5 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 		return 0, err
 	}
 
-	return userId, nil
+	return userID, nil
 }

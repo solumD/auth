@@ -15,11 +15,13 @@ import (
 
 const configPath = ".env"
 
+// App структура приложения
 type App struct {
 	serviceProvider *serviceProvider
 	grpcServer      *grpc.Server
 }
 
+// NewApp возвращает объект приложения
 func NewApp(ctx context.Context) (*App, error) {
 	a := &App{}
 
@@ -31,6 +33,7 @@ func NewApp(ctx context.Context) (*App, error) {
 	return a, nil
 }
 
+// Run запускает приложение
 func (a *App) Run() error {
 	defer func() {
 		closer.CloseAll()
@@ -40,6 +43,7 @@ func (a *App) Run() error {
 	return a.runGRPCServer()
 }
 
+// initDeps инициализирует все зависимости
 func (a *App) initDeps(ctx context.Context) error {
 	err := a.initConfig()
 	if err != nil {

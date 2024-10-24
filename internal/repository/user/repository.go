@@ -27,16 +27,19 @@ const (
 	updatedAtColumn = "updated_at"
 )
 
+// Структура репо с клиентом базы данных (интерфейсом)
 type repo struct {
 	db db.Client
 }
 
+// NewRepository возвращает новый объект репо слоя
 func NewRepository(db db.Client) repository.AuthRepository {
 	return &repo{
 		db: db,
 	}
 }
 
+// CreateUser - создает пользователя
 func (r *repo) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 	builderInsertUser := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
@@ -63,6 +66,7 @@ func (r *repo) CreateUser(ctx context.Context, user *model.User) (int64, error) 
 	return userID, nil
 }
 
+// GetUser - возвращает пользователя по id
 func (r *repo) GetUser(ctx context.Context, userID int64) (*model.User, error) {
 	builderGetUser := sq.Select(nameColumn).
 		From(tableName).
@@ -113,6 +117,7 @@ func (r *repo) GetUser(ctx context.Context, userID int64) (*model.User, error) {
 	return converter.ToUserFromRepo(&user), nil
 }
 
+// UpdateUser - обновляет данные пользователя по id
 func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb.Empty, error) {
 	builderGetUser := sq.Select(nameColumn).
 		From(tableName).
@@ -164,6 +169,7 @@ func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb
 	return &emptypb.Empty{}, nil
 }
 
+// DeleteUser - удаляет пользователя по id
 func (r *repo) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, error) {
 	builderGetUser := sq.Select(nameColumn).
 		From(tableName).

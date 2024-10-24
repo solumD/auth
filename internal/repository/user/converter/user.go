@@ -5,7 +5,8 @@ import (
 	modelRepo "github.com/solumD/auth/internal/repository/user/model"
 )
 
-// ToUserFromRepo converts repo user model into service user model
+// ToUserFromRepo конвертирует модель пользователя репо слоя в
+// модель сервисного слоя
 func ToUserFromRepo(user *modelRepo.User) *model.User {
 	return &model.User{
 		ID:        user.ID,

@@ -16,6 +16,7 @@ import (
 	authSrv "github.com/solumD/auth/internal/service/user"
 )
 
+// Структура API слоя
 type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
@@ -28,6 +29,7 @@ type serviceProvider struct {
 	authImpl       *authApi.Implementation
 }
 
+// NewServiceProvider возвращает новый объект API слоя
 func NewServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }

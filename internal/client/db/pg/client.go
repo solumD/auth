@@ -8,10 +8,12 @@ import (
 	"github.com/solumD/auth/internal/client/db"
 )
 
+// pgClient структура клиента postgres
 type pgClient struct {
 	masterDBC db.DB
 }
 
+// New возвращает новый объект клиента для работы с postgres
 func New(ctx context.Context, dsn string) (db.Client, error) {
 	dbc, err := pgxpool.Connect(ctx, dsn)
 	if err != nil {
