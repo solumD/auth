@@ -6,7 +6,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// DeleteUser - отправляет запрос в репо слой на удаление пользователя
+// DeleteUser отправляет запрос в репо слой на удаление пользователя
 func (s *srv) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, error) {
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
