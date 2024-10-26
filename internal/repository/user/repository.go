@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"fmt"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
@@ -148,7 +147,6 @@ func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb
 		Set(nameColumn, user.Name).
 		Set(emailColumn, user.Email).
 		Set(roleColumn, user.Role).
-		Set(updatedAtColumn, time.Now()).
 		Where(sq.Eq{idColumn: user.ID})
 
 	query, args, err = builderUpdateUser.ToSql()
