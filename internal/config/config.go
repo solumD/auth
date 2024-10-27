@@ -1,11 +1,31 @@
 package config
 
 import (
+	"time"
+
 	"github.com/joho/godotenv"
 )
 
-// Load reads ,env file from path and loads
-// variables into a project
+// GRPCConfig интерфейс grpc конфига
+type GRPCConfig interface {
+	Address() string
+}
+
+// PGConfig интерфейс postgres конфига
+type PGConfig interface {
+	DSN() string
+}
+
+// RedisConfig интерфейс redis конфига
+type RedisConfig interface {
+	Address() string
+	ConnectionTimeout() time.Duration
+	MaxIdle() int
+	IdleTimeout() time.Duration
+}
+
+// Load читает .env файл по указанному пути
+// и загружает переменные в проект
 func Load(path string) error {
 	err := godotenv.Load(path)
 	if err != nil {
@@ -13,14 +33,4 @@ func Load(path string) error {
 	}
 
 	return nil
-}
-
-// GRPCConfig is interface of a grpc config
-type GRPCConfig interface {
-	Address() string
-}
-
-// PGConfig is interface of a postgres config
-type PGConfig interface {
-	DSN() string
 }

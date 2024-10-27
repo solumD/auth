@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"log"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -15,6 +16,11 @@ func (s *srv) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, err
 			return errTx
 		}
 
+		_, err := s.authCache.DeleteUser(ctx, userID)
+		if err != nil {
+			log.Printf("failed to delete user %d from cache", userID)
+		}
+		log.Printf("deleted user %d from cache", userID)
 		return nil
 	})
 	if err != nil {

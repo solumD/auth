@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/solumD/auth/internal/cache"
 	"github.com/solumD/auth/internal/client/db"
 	"github.com/solumD/auth/internal/repository"
 	"github.com/solumD/auth/internal/service"
@@ -11,12 +12,17 @@ import (
 type srv struct {
 	authRepository repository.AuthRepository
 	txManager      db.TxManager
+	authCache      cache.AuthCache
 }
 
 // NewService возвращает объект сервисного слоя
-func NewService(authRepository repository.AuthRepository, txManager db.TxManager) service.AuthService {
+func NewService(
+	authRepository repository.AuthRepository,
+	txManager db.TxManager,
+	authCache cache.AuthCache) service.AuthService {
 	return &srv{
 		authRepository: authRepository,
 		txManager:      txManager,
+		authCache:      authCache,
 	}
 }

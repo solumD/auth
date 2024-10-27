@@ -1,0 +1,82 @@
+package redis
+
+import (
+	"context"
+	"strconv"
+
+	redigo "github.com/gomodule/redigo/redis"
+	"github.com/pkg/errors"
+	"github.com/solumD/auth/internal/cache"
+	"github.com/solumD/auth/internal/cache/redis/converter"
+	modelCache "github.com/solumD/auth/internal/cache/redis/model"
+	cacheCl "github.com/solumD/auth/internal/client/cache"
+	"github.com/solumD/auth/internal/model"
+	"google.golang.org/protobuf/types/known/emptypb"
+)
+
+type redisCache struct {
+	cl cacheCl.RedisClient
+}
+
+// NewRedisCache возвращает объект кэша redis с клиентом
+func NewRedisCache(cl cacheCl.RedisClient) cache.AuthCache {
+	return &redisCache{
+		cl: cl,
+	}
+}
+
+func (c *redisCache) CreateUser(ctx context.Context, user *model.User) (int64, error) {
+	userIDstr := strconv.FormatInt(user.ID, 10)
+	var updatedAt int64
+	if user.UpdatedAt.Valid {
+		updatedAt = user.UpdatedAt.Time.UnixNano()
+	}
+
+	u := modelCache.User{
+		ID:          user.ID,
+		Name:        user.Name,
+		Email:       user.Email,
+		Role:        user.Role,
+		CreatedAtNs: user.CreatedAt.UnixNano(),
+		UpdatedAtNs: &updatedAt,
+	}
+
+	err := c.cl.HashSet(ctx, userIDstr, u)
+	if err != nil {
+		return 0, err
+	}
+
+	return user.ID, nil
+}
+
+func (c *redisCache) GetUser(ctx context.Context, userID int64) (*model.User, error) {
+	userIDstr := strconv.FormatInt(userID, 10)
+
+	values, err := c.cl.HGetAll(ctx, userIDstr)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(values) == 0 {
+		return nil, errors.Errorf("no user with id %d in cache", userID)
+	}
+
+	var user modelCache.User
+	err = redigo.ScanStruct(values, &user)
+	if err != nil {
+		return nil, err
+	}
+
+	return converter.ToUserFromCache(&user), nil
+}
+
+func (c *redisCache) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, error) {
+	userIDstr := strconv.FormatInt(userID, 10)
+
+	err := c.cl.HDel(ctx, userIDstr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emptypb.Empty{}, nil
+}

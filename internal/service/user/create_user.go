@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/validation"
@@ -37,6 +38,18 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 		if errTx != nil {
 			return errTx
 		}
+
+		savedUser, errTx := s.authRepository.GetUser(ctx, userID)
+		if errTx != nil {
+			return errTx
+		}
+		_, errTx = s.authCache.CreateUser(ctx, savedUser)
+		if errTx != nil {
+			log.Printf("failed to save user %d in cache", userID)
+			return errTx
+		}
+
+		log.Printf("saved user %d in cache", userID)
 
 		return nil
 	})
