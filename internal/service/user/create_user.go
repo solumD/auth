@@ -9,7 +9,7 @@ import (
 	"github.com/solumD/auth/internal/validation"
 )
 
-// CreateUser отправляет запрос в репо слой на создание пользователя
+// CreateUser отправляет запрос в кэш, а затем в репо слой на создание пользователя
 func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 	err := validation.ValidateName(user.Name)
 	if err != nil {
@@ -43,13 +43,13 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 		if errTx != nil {
 			return errTx
 		}
-		_, errTx = s.authCache.CreateUser(ctx, savedUser)
+		errTx = s.authCache.CreateUser(ctx, savedUser)
 		if errTx != nil {
 			log.Printf("failed to save user %d in cache", userID)
 			return errTx
+		} else {
+			log.Printf("saved user %d in cache", userID)
 		}
-
-		log.Printf("saved user %d in cache", userID)
 
 		return nil
 	})

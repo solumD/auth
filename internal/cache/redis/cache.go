@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"strconv"
+	"time"
 
 	redigo "github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
@@ -11,8 +12,10 @@ import (
 	modelCache "github.com/solumD/auth/internal/cache/redis/model"
 	cacheCl "github.com/solumD/auth/internal/client/cache"
 	"github.com/solumD/auth/internal/model"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+// время жизни записи
+const redisTTL = 900 * time.Second
 
 type redisCache struct {
 	cl cacheCl.RedisClient
@@ -25,7 +28,8 @@ func NewRedisCache(cl cacheCl.RedisClient) cache.AuthCache {
 	}
 }
 
-func (c *redisCache) CreateUser(ctx context.Context, user *model.User) (int64, error) {
+// CreateUser добавляет данные пользователя в кэш
+func (c *redisCache) CreateUser(ctx context.Context, user *model.User) error {
 	userIDstr := strconv.FormatInt(user.ID, 10)
 	var updatedAt int64
 	if user.UpdatedAt.Valid {
@@ -43,12 +47,19 @@ func (c *redisCache) CreateUser(ctx context.Context, user *model.User) (int64, e
 
 	err := c.cl.HashSet(ctx, userIDstr, u)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	return user.ID, nil
+	// устанавливаем время жизни для записи
+	err = c.cl.Expire(ctx, userIDstr, redisTTL)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
+// GetUser получает данные пользователя из кэша
 func (c *redisCache) GetUser(ctx context.Context, userID int64) (*model.User, error) {
 	userIDstr := strconv.FormatInt(userID, 10)
 
@@ -70,13 +81,14 @@ func (c *redisCache) GetUser(ctx context.Context, userID int64) (*model.User, er
 	return converter.ToUserFromCache(&user), nil
 }
 
-func (c *redisCache) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, error) {
+// DeleteUser удаляет данные пользователя из кэша
+func (c *redisCache) DeleteUser(ctx context.Context, userID int64) error {
 	userIDstr := strconv.FormatInt(userID, 10)
 
 	err := c.cl.HDel(ctx, userIDstr)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &emptypb.Empty{}, nil
+	return nil
 }
