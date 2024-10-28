@@ -43,10 +43,10 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 		if errTx != nil {
 			return errTx
 		}
-		errTx = s.authCache.CreateUser(ctx, savedUser)
-		if errTx != nil {
-			log.Printf("failed to save user %d in cache", userID)
-			return errTx
+
+		errCache := s.authCache.CreateUser(ctx, savedUser)
+		if errCache != nil {
+			log.Printf("failed to save user %d in cache: %v ", userID, errCache)
 		} else {
 			log.Printf("saved user %d in cache", userID)
 		}
