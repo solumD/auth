@@ -18,7 +18,7 @@ type client struct {
 }
 
 // NewClient возращает клиент redis
-func NewClient(pool *redis.Pool, config config.RedisConfig) cache.RedisClient {
+func NewClient(pool *redis.Pool, config config.RedisConfig) cache.Client {
 	return &client{
 		pool:   pool,
 		config: config,

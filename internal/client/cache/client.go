@@ -6,7 +6,7 @@ import (
 )
 
 // RedisClient интерфейс клиента Redis
-type RedisClient interface {
+type Client interface {
 	HashSet(ctx context.Context, key string, values interface{}) error
 	Set(ctx context.Context, key string, value interface{}) error
 	HGetAll(ctx context.Context, key string) ([]interface{}, error)

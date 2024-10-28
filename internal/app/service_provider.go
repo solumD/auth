@@ -27,11 +27,9 @@ type serviceProvider struct {
 	grpcConfig  config.GRPCConfig
 	redisConfig config.RedisConfig
 
-	dbClient  db.Client
-	txManager db.TxManager
-
-	redisPool   *redigo.Pool
-	redisClient cache.RedisClient
+	dbClient    db.Client
+	txManager   db.TxManager
+	cacheClient cache.Client
 
 	authCache      authCache.AuthCache
 	authRepository repository.AuthRepository
@@ -115,39 +113,32 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return s.txManager
 }
 
-// RedisPool инициализирует пул соединений redis
-func (s *serviceProvider) RedisPool() *redigo.Pool {
-	if s.redisPool == nil {
-		s.redisPool = &redigo.Pool{
-			MaxIdle:     s.RedisConfig().MaxIdle(),
-			IdleTimeout: s.RedisConfig().IdleTimeout(),
-			DialContext: func(ctx context.Context) (redigo.Conn, error) {
-				return redigo.DialContext(ctx, "tcp", s.RedisConfig().Address())
-			},
-		}
-	}
-
-	return s.redisPool
-}
-
 // RedisClient инициализирует клиент redis
-func (s *serviceProvider) RedisClient(ctx context.Context) cache.RedisClient {
-	if s.redisClient == nil {
-		s.redisClient = redis.NewClient(s.RedisPool(), s.RedisConfig())
+func (s *serviceProvider) CacheClient(ctx context.Context) cache.Client {
+	redisPool := &redigo.Pool{
+		MaxIdle:     s.RedisConfig().MaxIdle(),
+		IdleTimeout: s.RedisConfig().IdleTimeout(),
+		DialContext: func(ctx context.Context) (redigo.Conn, error) {
+			return redigo.DialContext(ctx, "tcp", s.RedisConfig().Address())
+		},
 	}
 
-	err := s.redisClient.Ping(ctx)
+	if s.cacheClient == nil {
+		s.cacheClient = redis.NewClient(redisPool, s.RedisConfig())
+	}
+
+	err := s.cacheClient.Ping(ctx)
 	if err != nil {
 		log.Fatalf("redis ping error: %v", err)
 	}
 
-	return s.redisClient
+	return s.cacheClient
 }
 
 // AuthCache инициализирует кэш
 func (s *serviceProvider) AuthCache(ctx context.Context) authCache.AuthCache {
 	if s.authCache == nil {
-		s.authCache = redisCache.NewRedisCache(s.RedisClient(ctx))
+		s.authCache = redisCache.NewRedisCache(s.CacheClient(ctx))
 	}
 
 	return s.authCache
