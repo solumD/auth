@@ -18,11 +18,11 @@ import (
 const redisTTL = 900 * time.Second
 
 type redisCache struct {
-	cl cacheCl.RedisClient
+	cl cacheCl.CacheClient
 }
 
 // NewRedisCache возвращает объект кэша redis с клиентом
-func NewRedisCache(cl cacheCl.RedisClient) cache.AuthCache {
+func NewRedisCache(cl cacheCl.CacheClient) cache.AuthCache {
 	return &redisCache{
 		cl: cl,
 	}

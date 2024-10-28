@@ -27,11 +27,9 @@ type serviceProvider struct {
 	grpcConfig  config.GRPCConfig
 	redisConfig config.RedisConfig
 
-	dbClient  db.Client
-	txManager db.TxManager
-
-	redisPool   *redigo.Pool
-	redisClient cache.RedisClient
+	dbClient    db.Client
+	txManager   db.TxManager
+	cacheClient cache.CacheClient
 
 	authCache      authCache.AuthCache
 	authRepository repository.AuthRepository
@@ -110,36 +108,30 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return s.txManager
 }
 
-func (s *serviceProvider) RedisPool() *redigo.Pool {
-	if s.redisPool == nil {
-		s.redisPool = &redigo.Pool{
-			MaxIdle:     s.RedisConfig().MaxIdle(),
-			IdleTimeout: s.RedisConfig().IdleTimeout(),
-			DialContext: func(ctx context.Context) (redigo.Conn, error) {
-				return redigo.DialContext(ctx, "tcp", s.RedisConfig().Address())
-			},
-		}
+func (s *serviceProvider) CacheClient(ctx context.Context) cache.CacheClient {
+	redisPool := &redigo.Pool{
+		MaxIdle:     s.RedisConfig().MaxIdle(),
+		IdleTimeout: s.RedisConfig().IdleTimeout(),
+		DialContext: func(ctx context.Context) (redigo.Conn, error) {
+			return redigo.DialContext(ctx, "tcp", s.RedisConfig().Address())
+		},
 	}
 
-	return s.redisPool
-}
-
-func (s *serviceProvider) RedisClient(ctx context.Context) cache.RedisClient {
-	if s.redisClient == nil {
-		s.redisClient = redis.NewClient(s.RedisPool(), s.RedisConfig())
+	if s.cacheClient == nil {
+		s.cacheClient = redis.NewClient(redisPool, s.RedisConfig())
 	}
 
-	err := s.redisClient.Ping(ctx)
+	err := s.cacheClient.Ping(ctx)
 	if err != nil {
 		log.Fatalf("redis ping error: %v", err)
 	}
 
-	return s.redisClient
+	return s.cacheClient
 }
 
-func (s *serviceProvider) RedisCache(ctx context.Context) authCache.AuthCache {
+func (s *serviceProvider) AuthCache(ctx context.Context) authCache.AuthCache {
 	if s.authCache == nil {
-		s.authCache = redisCache.NewRedisCache(s.RedisClient(ctx))
+		s.authCache = redisCache.NewRedisCache(s.CacheClient(ctx))
 	}
 
 	return s.authCache
@@ -155,7 +147,7 @@ func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRe
 
 func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
-		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.TxManager(ctx), s.RedisCache(ctx))
+		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.TxManager(ctx), s.AuthCache(ctx))
 	}
 
 	return s.authService
