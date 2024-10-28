@@ -13,16 +13,18 @@ func (s *srv) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb.
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
 		_, errTx = s.authRepository.UpdateUser(ctx, user)
+
 		if errTx != nil {
 			return errTx
 		}
 
-		err := s.authCache.DeleteUser(ctx, user.ID)
-		if err != nil {
-			log.Printf("failed to delete user %d from cache", user.ID)
+		errCache := s.authCache.DeleteUser(ctx, user.ID)
+		if errCache != nil {
+			log.Printf("failed to delete user %d from cache: %v", user.ID, errCache)
 		} else {
 			log.Printf("deleted user %d from cache", user.ID)
 		}
+
 		return nil
 	})
 

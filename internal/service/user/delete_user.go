@@ -16,12 +16,13 @@ func (s *srv) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, err
 			return errTx
 		}
 
-		err := s.authCache.DeleteUser(ctx, userID)
-		if err != nil {
-			log.Printf("failed to delete user %d from cache", userID)
+		errCache := s.authCache.DeleteUser(ctx, userID)
+		if errCache != nil {
+			log.Printf("failed to delete user %d from cache: %v", userID, errCache)
 		} else {
 			log.Printf("deleted user %d from cache", userID)
 		}
+
 		return nil
 	})
 

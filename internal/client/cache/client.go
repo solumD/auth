@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-// RedisClient интерфейс клиента Redis
-type CacheClient interface {
+// Client интерфейс клиента кэша
+type Client interface {
 	HashSet(ctx context.Context, key string, values interface{}) error
 	Set(ctx context.Context, key string, value interface{}) error
 	HGetAll(ctx context.Context, key string) ([]interface{}, error)

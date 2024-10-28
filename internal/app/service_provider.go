@@ -29,7 +29,7 @@ type serviceProvider struct {
 
 	dbClient    db.Client
 	txManager   db.TxManager
-	cacheClient cache.CacheClient
+	cacheClient cache.Client
 
 	authCache      authCache.AuthCache
 	authRepository repository.AuthRepository
@@ -108,7 +108,7 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return s.txManager
 }
 
-func (s *serviceProvider) CacheClient(ctx context.Context) cache.CacheClient {
+func (s *serviceProvider) CacheClient(ctx context.Context) cache.Client {
 	redisPool := &redigo.Pool{
 		MaxIdle:     s.RedisConfig().MaxIdle(),
 		IdleTimeout: s.RedisConfig().IdleTimeout(),
