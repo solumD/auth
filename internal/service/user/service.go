@@ -26,3 +26,21 @@ func NewService(
 		authCache:      authCache,
 	}
 }
+
+// NewMockService возвращает объект мока сервисного слоя
+func NewMockService(deps ...interface{}) service.AuthService {
+	serv := srv{}
+
+	for _, v := range deps {
+		switch s := v.(type) {
+		case repository.AuthRepository:
+			serv.authRepository = s
+		case cache.AuthCache:
+			serv.authCache = s
+		case db.TxManager:
+			serv.txManager = s
+		}
+	}
+
+	return &serv
+}
