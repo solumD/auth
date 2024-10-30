@@ -26,7 +26,7 @@ type serviceProvider struct {
 
 	authRepository repository.AuthRepository
 	authService    service.AuthService
-	authImpl       *authApi.Implementation
+	authImpl       *authApi.AuthAPI
 }
 
 // NewServiceProvider возвращает новый объект API слоя
@@ -34,6 +34,7 @@ func NewServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
 
+// PGConfig инициализирует конфиг postgres
 func (s *serviceProvider) PGConfig() config.PGConfig {
 	if s.pgConfig == nil {
 		cfg, err := config.NewPGConfig()
@@ -47,6 +48,7 @@ func (s *serviceProvider) PGConfig() config.PGConfig {
 	return s.pgConfig
 }
 
+// GRPCConfig инициализирует конфиг grpc
 func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	if s.grpcConfig == nil {
 		cfg, err := config.NewGRPCConfig()
@@ -60,6 +62,7 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
+// DBClient инициализирует клиент базы данных
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
 		cl, err := pg.New(ctx, s.PGConfig().DSN())
@@ -79,6 +82,7 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	return s.dbClient
 }
 
+// TxManager инициализирует менеджер транзакций
 func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	if s.txManager == nil {
 		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
@@ -87,7 +91,8 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return s.txManager
 }
 
-func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRepository {
+// AuthRepository инициализирует репо слой
+func (s *serviceProvider) AuthRepository(ctx context.Context) repository.AuthRepository {
 	if s.authRepository == nil {
 		s.authRepository = authRepo.NewRepository(s.DBClient(ctx))
 	}
@@ -95,17 +100,19 @@ func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRe
 	return s.authRepository
 }
 
+// AuthService иницилизирует сервисный слой
 func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
-		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.TxManager(ctx))
+		s.authService = authSrv.NewService(s.AuthRepository(ctx), s.TxManager(ctx))
 	}
 
 	return s.authService
 }
 
-func (s *serviceProvider) AuthImpl(ctx context.Context) *authApi.Implementation {
+// AuthAPI инициализирует api слой
+func (s *serviceProvider) AuthAPI(ctx context.Context) *authApi.AuthAPI {
 	if s.authImpl == nil {
-		s.authImpl = authApi.NewImplementation(s.AuthService(ctx))
+		s.authImpl = authApi.NewAuthAPI(s.AuthService(ctx))
 	}
 
 	return s.authImpl

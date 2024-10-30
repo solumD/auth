@@ -9,8 +9,13 @@ import (
 )
 
 // CreateUser - отправляет запрос в сервисный слой на создание пользователя
-func (i *Implementation) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.CreateUserResponse, error) {
-	userID, err := i.authService.CreateUser(ctx, converter.ToUserFromDescUser(req))
+func (i *AuthAPI) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*desc.CreateUserResponse, error) {
+	convertedReq, err := converter.ToUserFromDescUser(req)
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := i.authService.CreateUser(ctx, convertedReq)
 	if err != nil {
 		return nil, err
 	}

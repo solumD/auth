@@ -2,15 +2,17 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
 	"github.com/solumD/auth/internal/client/db"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/repository"
 	"github.com/solumD/auth/internal/repository/user/converter"
 	modelRepo "github.com/solumD/auth/internal/repository/user/model"
+
+	sq "github.com/Masterminds/squirrel"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -84,10 +86,12 @@ func (r *repo) GetUser(ctx context.Context, userID int64) (*model.User, error) {
 	}
 
 	var name string
+
 	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&name)
-	if err == pgx.ErrNoRows {
-		return nil, fmt.Errorf("user with id %d doesn't exist", userID)
-	} else if err != nil {
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("user with id %d doesn't exist", userID)
+		}
 		return nil, err
 	}
 
@@ -113,7 +117,12 @@ func (r *repo) GetUser(ctx context.Context, userID int64) (*model.User, error) {
 		return nil, err
 	}
 
-	return converter.ToUserFromRepo(&user), nil
+	u, err := converter.ToUserFromRepo(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
 }
 
 // UpdateUser обновляет данные пользователя по id
@@ -135,10 +144,12 @@ func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb
 	}
 
 	var name string
+
 	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&name)
-	if err == pgx.ErrNoRows {
-		return nil, fmt.Errorf("user with id %d doesn't exist", user.ID)
-	} else if err != nil {
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("user with id %d doesn't exist", user.ID)
+		}
 		return nil, err
 	}
 
@@ -186,13 +197,14 @@ func (r *repo) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, er
 	}
 
 	var name string
+
 	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&name)
-	if err == pgx.ErrNoRows {
-		return nil, fmt.Errorf("user with id %d doesn't exist", userID)
-	} else if err != nil {
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("user with id %d doesn't exist", userID)
+		}
 		return nil, err
 	}
-
 	builderDeleteUser := sq.Delete(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{idColumn: userID})

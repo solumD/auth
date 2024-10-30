@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/solumD/auth/internal/client/db"
+	"github.com/solumD/auth/internal/client/db/prettier"
+
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/solumD/auth/internal/client/db"
-	"github.com/solumD/auth/internal/client/db/prettier"
 )
 
 type key string

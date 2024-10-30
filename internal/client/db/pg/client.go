@@ -3,9 +3,10 @@ package pg
 import (
 	"context"
 
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
 	"github.com/solumD/auth/internal/client/db"
+
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 // pgClient структура клиента postgres

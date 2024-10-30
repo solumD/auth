@@ -17,7 +17,6 @@ func (s *srv) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, err
 
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}

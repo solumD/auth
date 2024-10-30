@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/solumD/auth/internal/model"
+
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 

@@ -5,16 +5,16 @@ import (
 	desc "github.com/solumD/auth/pkg/auth_v1"
 )
 
-// Implementation сруктура с заглушками gRPC-методов (при их отсутствии) и
+// AuthAPI сруктура с заглушками gRPC-методов (при их отсутствии) и
 // объект сервисного слоя (его интерфейса)
-type Implementation struct {
+type AuthAPI struct {
 	desc.UnimplementedAuthV1Server
 	authService service.AuthService
 }
 
-// NewImplementation возвращает новый объект имплементации API-слоя
-func NewImplementation(authService service.AuthService) *Implementation {
-	return &Implementation{
+// NewAuthAPI возвращает новый объект имплементации API-слоя
+func NewAuthAPI(authService service.AuthService) *AuthAPI {
+	return &AuthAPI{
 		authService: authService,
 	}
 }

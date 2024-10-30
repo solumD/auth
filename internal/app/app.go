@@ -8,6 +8,7 @@ import (
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	desc "github.com/solumD/auth/pkg/auth_v1"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -74,7 +75,7 @@ func (a *App) initGRPCServer(ctx context.Context) {
 
 	reflection.Register(a.grpcServer)
 
-	desc.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthImpl(ctx))
+	desc.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthAPI(ctx))
 
 }
 
