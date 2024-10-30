@@ -9,7 +9,7 @@ import (
 	"github.com/solumD/auth/internal/validation"
 )
 
-// CreateUser отправляет запрос в кэш, а затем в репо слой на создание пользователя
+// CreateUser отправляет запрос в репо слой на создание пользователя, а затем сохраняет данные в кэш
 func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 	err := validation.ValidateName(user.Name)
 	if err != nil {
