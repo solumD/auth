@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v4"
 	"github.com/solumD/auth/internal/client/db"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/repository"
@@ -13,6 +12,7 @@ import (
 	modelRepo "github.com/solumD/auth/internal/repository/user/model"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v4"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -42,13 +42,28 @@ func NewRepository(db db.Client) repository.AuthRepository {
 
 // CreateUser создает пользователя
 func (r *repo) CreateUser(ctx context.Context, user *model.User) (int64, error) {
-	builderInsertUser := sq.Insert(tableName).
+	exist, err := r.IsNameExist(ctx, user.Name)
+	if err != nil {
+		return 0, err
+	}
+	if exist {
+		return 0, fmt.Errorf("user with name %s already exists", user.Name)
+	}
+
+	exist, err = r.IsEmailExist(ctx, user.Email)
+	if err != nil {
+		return 0, err
+	}
+	if exist {
+		return 0, fmt.Errorf("user with email %s already exists", user.Email)
+	}
+
+	query, args, err := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, emailColumn, passwordColumn, roleColumn).
 		Values(user.Name, user.Email, user.Password, user.Role).
-		Suffix("RETURNING id")
+		Suffix("RETURNING id").ToSql()
 
-	query, args, err := builderInsertUser.ToSql()
 	if err != nil {
 		return 0, err
 	}
@@ -69,50 +84,15 @@ func (r *repo) CreateUser(ctx context.Context, user *model.User) (int64, error) 
 
 // GetUser возвращает пользователя по id
 func (r *repo) GetUser(ctx context.Context, userID int64) (*model.User, error) {
-	builderGetUser := sq.Select(nameColumn).
-		From(tableName).
-		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{idColumn: userID}).
-		Limit(1)
-
-	query, args, err := builderGetUser.ToSql()
+	exist, err := r.IsExistByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-
-	q := db.Query{
-		Name:     "user_repository.GetUser",
-		QueryRaw: query,
+	if !exist {
+		return nil, fmt.Errorf("user with id %d doesn't exist", userID)
 	}
 
-	var name string
-
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&name)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("user with id %d doesn't exist", userID)
-		}
-		return nil, err
-	}
-
-	builderGetUser = sq.Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
-		From(tableName).
-		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{idColumn: userID}).
-		Limit(1)
-
-	query, args, err = builderGetUser.ToSql()
-	if err != nil {
-		return nil, err
-	}
-
-	q = db.Query{
-		Name:     "user_repository.GetUser",
-		QueryRaw: query,
-	}
-
-	var user modelRepo.User
-	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
+	user, err := r.GetByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -127,45 +107,34 @@ func (r *repo) GetUser(ctx context.Context, userID int64) (*model.User, error) {
 
 // UpdateUser обновляет данные пользователя по id
 func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb.Empty, error) {
-	builderGetUser := sq.Select(nameColumn).
-		From(tableName).
-		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{idColumn: user.ID}).
-		Limit(1)
+	exist, err := r.IsExistByID(ctx, user.ID)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, fmt.Errorf("user with id %d doesn't exist", user.ID)
+	}
 
-	query, args, err := builderGetUser.ToSql()
+	builderUpdate := sq.Update(tableName).
+		PlaceholderFormat(sq.Dollar).
+		Set(roleColumn, user.Role)
+
+	if user.Name != nil {
+		builderUpdate = builderUpdate.Set(nameColumn, *user.Name)
+	}
+
+	if user.Email != nil {
+		builderUpdate = builderUpdate.Set(emailColumn, *user.Email)
+	}
+
+	builderUpdate = builderUpdate.Where(sq.Eq{idColumn: user.ID})
+
+	query, args, err := builderUpdate.ToSql()
 	if err != nil {
 		return nil, err
 	}
 
 	q := db.Query{
-		Name:     "user_repository.UpdateUser",
-		QueryRaw: query,
-	}
-
-	var name string
-
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&name)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("user with id %d doesn't exist", user.ID)
-		}
-		return nil, err
-	}
-
-	builderUpdateUser := sq.Update(tableName).
-		PlaceholderFormat(sq.Dollar).
-		Set(nameColumn, user.Name).
-		Set(emailColumn, user.Email).
-		Set(roleColumn, user.Role).
-		Where(sq.Eq{idColumn: user.ID})
-
-	query, args, err = builderUpdateUser.ToSql()
-	if err != nil {
-		return nil, err
-	}
-
-	q = db.Query{
 		Name:     "user_repository.UpdateUser",
 		QueryRaw: query,
 	}
@@ -180,41 +149,24 @@ func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb
 
 // DeleteUser удаляет пользователя по id
 func (r *repo) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, error) {
-	builderGetUser := sq.Select(nameColumn).
-		From(tableName).
+	exist, err := r.IsExistByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, fmt.Errorf("user with id %d doesn't exist", userID)
+	}
+
+	query, args, err := sq.Delete(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{idColumn: userID}).
-		Limit(1)
+		ToSql()
 
-	query, args, err := builderGetUser.ToSql()
 	if err != nil {
 		return nil, err
 	}
 
 	q := db.Query{
-		Name:     "user_repository.DeleteUser",
-		QueryRaw: query,
-	}
-
-	var name string
-
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&name)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("user with id %d doesn't exist", userID)
-		}
-		return nil, err
-	}
-	builderDeleteUser := sq.Delete(tableName).
-		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{idColumn: userID})
-
-	query, args, err = builderDeleteUser.ToSql()
-	if err != nil {
-		return nil, err
-	}
-
-	q = db.Query{
 		Name:     "user_repository.DeleteUser",
 		QueryRaw: query,
 	}
@@ -225,4 +177,124 @@ func (r *repo) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, er
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+// GetById получает юзера из БД по его id
+func (r *repo) GetByID(ctx context.Context, userID int64) (modelRepo.User, error) {
+	var user modelRepo.User
+
+	query, args, err := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
+		From(tableName).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{idColumn: userID}).
+		Limit(1).ToSql()
+
+	if err != nil {
+		return user, err
+	}
+
+	q := db.Query{
+		Name:     "user_repository.GetById",
+		QueryRaw: query,
+	}
+
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+// IsExistById проверяет, существует ли в БД пользователь с указанным ID
+func (r *repo) IsExistByID(ctx context.Context, userID int64) (bool, error) {
+	query, args, err := sq.Select(nameColumn).
+		From(tableName).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{idColumn: userID}).
+		Limit(1).ToSql()
+
+	if err != nil {
+		return false, err
+	}
+
+	q := db.Query{
+		Name:     "user_repository.IsExistById",
+		QueryRaw: query,
+	}
+
+	var name string
+
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&name)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
+}
+
+// IsEmailExist проверяет, существует ли в БД указанный email
+func (r *repo) IsEmailExist(ctx context.Context, email string) (bool, error) {
+	query, args, err := sq.Select(nameColumn).
+		From(tableName).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{emailColumn: email}).
+		Limit(1).ToSql()
+
+	if err != nil {
+		return false, err
+	}
+
+	q := db.Query{
+		Name:     "user_repository.IsEmailExist",
+		QueryRaw: query,
+	}
+
+	var name string
+
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&name)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
+}
+
+// IsNameExist проверяет, существует ли в БД указанный name
+func (r *repo) IsNameExist(ctx context.Context, name string) (bool, error) {
+	query, args, err := sq.Select(nameColumn).
+		From(tableName).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{nameColumn: name}).
+		Limit(1).ToSql()
+
+	if err != nil {
+		return false, err
+	}
+
+	q := db.Query{
+		Name:     "user_repository.IsNameExist",
+		QueryRaw: query,
+	}
+
+	var n string
+
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&n)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
 }

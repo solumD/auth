@@ -10,16 +10,16 @@ import (
 )
 
 const (
-	ErrUserModelIsNil      = "user model is nil"
-	ErrDescUserIsNil       = "desc user is nil"
-	ErrDescUserUpdateIsNil = "desc user update is nil"
+	errUserModelIsNil      = "user model is nil"
+	errDescUserIsNil       = "desc user is nil"
+	errDescUserUpdateIsNil = "desc user update is nil"
 )
 
 // ToDescUserFromService конвертирует сервисную модель пользователя в
 // в gRPC модель
 func ToDescUserFromService(user *model.User) (*desc.GetUserResponse, error) {
 	if user == nil {
-		return nil, fmt.Errorf("convertion failed: %v", ErrUserModelIsNil)
+		return nil, fmt.Errorf("convertion failed: %v", errUserModelIsNil)
 	}
 
 	var updatedAt *timestamppb.Timestamp
@@ -41,7 +41,7 @@ func ToDescUserFromService(user *model.User) (*desc.GetUserResponse, error) {
 // модель сервисного слоя
 func ToUserFromDescUser(user *desc.CreateUserRequest) (*model.User, error) {
 	if user == nil {
-		return nil, fmt.Errorf("convertion failed: %v", ErrDescUserIsNil)
+		return nil, fmt.Errorf("convertion failed: %v", errDescUserIsNil)
 	}
 
 	return &model.User{
@@ -57,7 +57,7 @@ func ToUserFromDescUser(user *desc.CreateUserRequest) (*model.User, error) {
 // модель сервисного слоя
 func ToUserFromDescUpdate(user *desc.UpdateUserRequest) (*model.UserUpdate, error) {
 	if user == nil {
-		return nil, fmt.Errorf("convertion failed: %v", ErrDescUserUpdateIsNil)
+		return nil, fmt.Errorf("convertion failed: %v", errDescUserUpdateIsNil)
 	}
 
 	u := &model.UserUpdate{}
