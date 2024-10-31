@@ -26,18 +26,11 @@ type serviceProvider struct {
 	pgConfig    config.PGConfig
 	grpcConfig  config.GRPCConfig
 	redisConfig config.RedisConfig
-	pgConfig    config.PGConfig
-	grpcConfig  config.GRPCConfig
-	redisConfig config.RedisConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
 	cacheClient cache.Client
-	dbClient    db.Client
-	txManager   db.TxManager
-	cacheClient cache.Client
 
-	authCache      authCache.AuthCache
 	authCache      authCache.AuthCache
 	authRepository repository.AuthRepository
 	authService    service.AuthService
