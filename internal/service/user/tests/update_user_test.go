@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/brianvoe/gofakeit/v7"
-	"github.com/gojuno/minimock/v3"
 	"github.com/solumD/auth/internal/cache"
 	cacheMocks "github.com/solumD/auth/internal/cache/mocks"
 	"github.com/solumD/auth/internal/client/db"
@@ -15,6 +13,9 @@ import (
 	"github.com/solumD/auth/internal/repository"
 	repoMocks "github.com/solumD/auth/internal/repository/mocks"
 	"github.com/solumD/auth/internal/service/user"
+
+	"github.com/brianvoe/gofakeit/v7"
+	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -77,9 +78,6 @@ func TestUpdateUser(t *testing.T) {
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
 				mock := mocks.NewTxManagerMock(mc)
-				mock.ReadCommittedMock.Set(func(ctx context.Context, f db.Handler) (err error) {
-					return f(ctx)
-				})
 				return mock
 			},
 			authCacheMock: func(mc *minimock.Controller) cache.AuthCache {
@@ -103,9 +101,6 @@ func TestUpdateUser(t *testing.T) {
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
 				mock := mocks.NewTxManagerMock(mc)
-				mock.ReadCommittedMock.Set(func(ctx context.Context, f db.Handler) (err error) {
-					return f(ctx)
-				})
 				return mock
 			},
 			authCacheMock: func(mc *minimock.Controller) cache.AuthCache {
@@ -128,9 +123,6 @@ func TestUpdateUser(t *testing.T) {
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
 				mock := mocks.NewTxManagerMock(mc)
-				mock.ReadCommittedMock.Set(func(ctx context.Context, f db.Handler) (err error) {
-					return f(ctx)
-				})
 				return mock
 			},
 			authCacheMock: func(mc *minimock.Controller) cache.AuthCache {

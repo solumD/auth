@@ -6,14 +6,15 @@ import (
 	"testing"
 
 	"github.com/solumD/auth/internal/api/user"
+	"github.com/solumD/auth/internal/converter"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/service"
 	serviceMocks "github.com/solumD/auth/internal/service/mocks"
 	desc "github.com/solumD/auth/pkg/auth_v1"
-	"github.com/stretchr/testify/require"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/gojuno/minimock/v3"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -88,6 +89,19 @@ func TestUpdateUser(t *testing.T) {
 			authServiceMock: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
 				mock.UpdateUserMock.Expect(ctx, info).Return(nil, serviceErr)
+				return mock
+			},
+		},
+		{
+			name: "error req is nil",
+			args: args{
+				ctx: ctx,
+				req: nil,
+			},
+			want: nil,
+			err:  converter.ErrDescUserUpdateIsNil,
+			authServiceMock: func(mc *minimock.Controller) service.AuthService {
+				mock := serviceMocks.NewAuthServiceMock(mc)
 				return mock
 			},
 		},
