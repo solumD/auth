@@ -8,30 +8,30 @@ import (
 )
 
 var (
-	errInvalidEmail = fmt.Errorf("invalid email")
+	ErrInvalidEmail = fmt.Errorf("invalid email")
 
-	errNameContainsSpaces = fmt.Errorf("name can't contain spaces")
-	errNameTooShort       = fmt.Errorf("minimum name's length is 8 symbols")
-	errInvalidName        = fmt.Errorf("invalid name")
+	ErrNameContainsSpaces = fmt.Errorf("name can't contain spaces")
+	ErrNameTooShort       = fmt.Errorf("minimum name's length is 8 symbols")
+	ErrInvalidName        = fmt.Errorf("invalid name")
 
-	errPassContainsSpaces = fmt.Errorf("password can't contain spaces")
-	errPassTooShort       = fmt.Errorf("minimum password's length is 8 symbols")
-	errInvalidPass        = fmt.Errorf("invalid password")
+	ErrPassContainsSpaces = fmt.Errorf("password can't contain spaces")
+	ErrPassTooShort       = fmt.Errorf("minimum password's length is 8 symbols")
+	ErrInvalidPass        = fmt.Errorf("invalid password")
 )
 
 // ValidateName валидирует имя пользователя
 func ValidateName(name string) error {
 	if len(strings.Fields(name)) > 1 {
-		return errNameContainsSpaces
+		return ErrNameContainsSpaces
 	}
 
 	if len(name) < 8 {
-		return errNameTooShort
+		return ErrNameTooShort
 	}
 
 	re := regexp.MustCompile("^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
 	if !re.MatchString(name) {
-		return errInvalidName
+		return ErrInvalidName
 	}
 
 	return nil
@@ -41,7 +41,7 @@ func ValidateName(name string) error {
 func ValidateEmail(email string) error {
 	_, err := mail.ParseAddress(email)
 	if err != nil {
-		return errInvalidEmail
+		return ErrInvalidEmail
 	}
 
 	return nil
@@ -50,16 +50,16 @@ func ValidateEmail(email string) error {
 // ValidatePassword валидирует пароль
 func ValidatePassword(password string) error {
 	if len(strings.Fields(password)) > 1 {
-		return errPassContainsSpaces
+		return ErrPassContainsSpaces
 	}
 
 	if len(password) < 8 {
-		return errPassTooShort
+		return ErrPassTooShort
 	}
 
 	re := regexp.MustCompile("^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
 	if !re.MatchString(password) {
-		return errInvalidPass
+		return ErrInvalidPass
 	}
 
 	return nil
