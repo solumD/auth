@@ -9,10 +9,10 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const (
-	errUserModelIsNil      = "user model is nil"
-	errDescUserIsNil       = "desc user is nil"
-	errDescUserUpdateIsNil = "desc user update is nil"
+var (
+	errUserModelIsNil      = fmt.Errorf("user model is nil")
+	errDescUserIsNil       = fmt.Errorf("desc user is nil")
+	errDescUserUpdateIsNil = fmt.Errorf("desc user update is nil")
 )
 
 // ToDescUserFromService конвертирует сервисную модель пользователя в

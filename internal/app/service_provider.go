@@ -16,7 +16,7 @@ import (
 	authSrv "github.com/solumD/auth/internal/service/user"
 )
 
-// Структура API слоя
+// Структура приложения со всеми зависимости
 type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
