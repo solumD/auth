@@ -6,13 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brianvoe/gofakeit/v7"
-	"github.com/gojuno/minimock/v3"
 	"github.com/solumD/auth/internal/api/user"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/service"
 	serviceMocks "github.com/solumD/auth/internal/service/mocks"
 	desc "github.com/solumD/auth/pkg/auth_v1"
+
+	"github.com/brianvoe/gofakeit/v7"
+	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -103,7 +104,7 @@ func TestGetUser(t *testing.T) {
 			t.Parallel()
 
 			authServiceMock := tt.authServiceMock(mc)
-			api := user.NewImplementation(authServiceMock)
+			api := user.NewAuthAPI(authServiceMock)
 
 			res, err := api.GetUser(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)

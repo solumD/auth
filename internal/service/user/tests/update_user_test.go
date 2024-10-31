@@ -44,8 +44,8 @@ func TestUpdateUser(t *testing.T) {
 
 		req = &model.UserUpdate{
 			ID:    id,
-			Name:  name,
-			Email: email,
+			Name:  &name,
+			Email: &email,
 			Role:  int64(role),
 		}
 

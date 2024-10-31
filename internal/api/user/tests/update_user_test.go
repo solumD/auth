@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/brianvoe/gofakeit/v7"
-	"github.com/gojuno/minimock/v3"
 	"github.com/solumD/auth/internal/api/user"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/service"
 	serviceMocks "github.com/solumD/auth/internal/service/mocks"
 	desc "github.com/solumD/auth/pkg/auth_v1"
 	"github.com/stretchr/testify/require"
+
+	"github.com/brianvoe/gofakeit/v7"
+	"github.com/gojuno/minimock/v3"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -46,8 +47,8 @@ func TestUpdateUser(t *testing.T) {
 
 		info = &model.UserUpdate{
 			ID:    id,
-			Name:  name,
-			Email: email,
+			Name:  &name,
+			Email: &email,
 			Role:  int64(role),
 		}
 
@@ -98,7 +99,7 @@ func TestUpdateUser(t *testing.T) {
 			t.Parallel()
 
 			authServiceMock := tt.authServiceMock(mc)
-			api := user.NewImplementation(authServiceMock)
+			api := user.NewAuthAPI(authServiceMock)
 
 			res, err := api.UpdateUser(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)
