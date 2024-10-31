@@ -26,11 +26,18 @@ type serviceProvider struct {
 	pgConfig    config.PGConfig
 	grpcConfig  config.GRPCConfig
 	redisConfig config.RedisConfig
+	pgConfig    config.PGConfig
+	grpcConfig  config.GRPCConfig
+	redisConfig config.RedisConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
 	cacheClient cache.Client
+	dbClient    db.Client
+	txManager   db.TxManager
+	cacheClient cache.Client
 
+	authCache      authCache.AuthCache
 	authCache      authCache.AuthCache
 	authRepository repository.AuthRepository
 	authService    service.AuthService
@@ -95,6 +102,7 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 		err = cl.DB().Ping(ctx)
 		if err != nil {
 			log.Fatalf("postgres ping error: %v", err)
+			log.Fatalf("postgres ping error: %v", err)
 		}
 		closer.Add(cl.Close)
 
@@ -148,6 +156,7 @@ func (s *serviceProvider) AuthCache(ctx context.Context) authCache.AuthCache {
 func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRepository {
 	if s.authRepository == nil {
 		s.authRepository = authRepoPG.NewRepository(s.DBClient(ctx))
+		s.authRepository = authRepoPG.NewRepository(s.DBClient(ctx))
 	}
 
 	return s.authRepository
@@ -156,6 +165,7 @@ func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRe
 // AuthService иницилизирует сервисный слой
 func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
+		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.TxManager(ctx), s.AuthCache(ctx))
 		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.TxManager(ctx), s.AuthCache(ctx))
 	}
 

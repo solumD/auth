@@ -11,6 +11,7 @@ import (
 )
 
 // UpdateUser отправляет запрос в кэш, а затем в репо слой на обновление данных пользователя
+// UpdateUser отправляет запрос в кэш, а затем в репо слой на обновление данных пользователя
 func (s *srv) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb.Empty, error) {
 	err := validation.ValidateName(*user.Name)
 	if err != nil {
