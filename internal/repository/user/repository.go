@@ -97,9 +97,9 @@ func (r *repo) GetUser(ctx context.Context, userID int64) (*model.User, error) {
 		return nil, err
 	}
 
-	u, err := converter.ToUserFromRepo(&user)
-	if err != nil {
-		return nil, err
+	u := converter.ToUserFromRepo(&user)
+	if u == nil {
+		return nil, fmt.Errorf("convertion failed, user model is nil")
 	}
 
 	return u, nil
