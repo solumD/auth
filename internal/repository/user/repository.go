@@ -208,7 +208,7 @@ func (r *repo) GetByID(ctx context.Context, userID int64) (modelRepo.User, error
 
 // IsExistById проверяет, существует ли в БД пользователь с указанным ID
 func (r *repo) IsExistByID(ctx context.Context, userID int64) (bool, error) {
-	query, args, err := sq.Select(nameColumn).
+	query, args, err := sq.Select("1").
 		From(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{idColumn: userID}).
@@ -239,7 +239,7 @@ func (r *repo) IsExistByID(ctx context.Context, userID int64) (bool, error) {
 
 // IsEmailExist проверяет, существует ли в БД указанный email
 func (r *repo) IsEmailExist(ctx context.Context, email string) (bool, error) {
-	query, args, err := sq.Select(nameColumn).
+	query, args, err := sq.Select("1").
 		From(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{emailColumn: email}).
@@ -270,7 +270,7 @@ func (r *repo) IsEmailExist(ctx context.Context, email string) (bool, error) {
 
 // IsNameExist проверяет, существует ли в БД указанный name
 func (r *repo) IsNameExist(ctx context.Context, name string) (bool, error) {
-	query, args, err := sq.Select(nameColumn).
+	query, args, err := sq.Select("1").
 		From(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{nameColumn: name}).

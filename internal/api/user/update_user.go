@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/solumD/auth/internal/api/user/errors"
 	"github.com/solumD/auth/internal/converter"
 	desc "github.com/solumD/auth/pkg/auth_v1"
 
@@ -12,12 +13,12 @@ import (
 
 // UpdateUser - отправляет запрос в сервисный слой на обновление данных пользователя
 func (i *AuthAPI) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*emptypb.Empty, error) {
-	convertedReq, err := converter.ToUserFromDescUpdate(req)
-	if err != nil {
-		return nil, err
+	convertedReq := converter.ToUserFromDescUpdate(req)
+	if convertedReq == nil {
+		return nil, errors.ErrDescUserUpdateIsNil
 	}
 
-	_, err = i.authService.UpdateUser(ctx, convertedReq)
+	_, err := i.authService.UpdateUser(ctx, convertedReq)
 	if err != nil {
 		return nil, err
 	}
