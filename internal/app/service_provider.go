@@ -95,7 +95,6 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 		err = cl.DB().Ping(ctx)
 		if err != nil {
 			log.Fatalf("postgres ping error: %v", err)
-			log.Fatalf("postgres ping error: %v", err)
 		}
 		closer.Add(cl.Close)
 

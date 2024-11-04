@@ -8,15 +8,15 @@ import (
 )
 
 var (
-	ErrInvalidEmail = fmt.Errorf("invalid email")
+	ErrInvalidEmail = fmt.Errorf("invalid email") // ErrInvalidEmail ошибка, если адрес почты невалиден
 
-	ErrNameContainsSpaces = fmt.Errorf("name can't contain spaces")
-	ErrNameTooShort       = fmt.Errorf("minimum name's length is 8 symbols")
-	ErrInvalidName        = fmt.Errorf("invalid name")
+	ErrNameContainsSpaces = fmt.Errorf("name can't contain spaces")          // ErrNameContainsSpaces ошибка, если имя содержит пробелы
+	ErrNameTooShort       = fmt.Errorf("minimum name's length is 8 symbols") // ErrNameTooShort ошибка, если имя короче 8 символов
+	ErrInvalidName        = fmt.Errorf("invalid name")                       // ErrInvalidName ошибка, если имя невалидно
 
-	ErrPassContainsSpaces = fmt.Errorf("password can't contain spaces")
-	ErrPassTooShort       = fmt.Errorf("minimum password's length is 8 symbols")
-	ErrInvalidPass        = fmt.Errorf("invalid password")
+	ErrPassContainsSpaces = fmt.Errorf("password can't contain spaces")          // ErrPassContainsSpaces ошибка, если пароль содержит пробелы
+	ErrPassTooShort       = fmt.Errorf("minimum password's length is 8 symbols") // ErrPassTooShort ошибка, если пароль короче 8 символов
+	ErrInvalidPass        = fmt.Errorf("invalid password")                       // ErrInvalidPass ошибка, если пароль невалиден
 )
 
 // ValidateName валидирует имя пользователя
