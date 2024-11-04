@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 
+	"github.com/solumD/auth/internal/api/user/errors"
 	"github.com/solumD/auth/internal/converter"
 	desc "github.com/solumD/auth/pkg/auth_v1"
 )
@@ -14,9 +15,9 @@ func (i *AuthAPI) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.
 		return nil, err
 	}
 
-	convertedUser, err := converter.ToDescUserFromService(user)
-	if err != nil {
-		return nil, err
+	convertedUser := converter.ToDescUserFromService(user)
+	if convertedUser == nil {
+		return nil, errors.ErrUserModelIsNil
 	}
 
 	return convertedUser, nil

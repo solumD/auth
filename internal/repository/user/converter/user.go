@@ -1,17 +1,15 @@
 package converter
 
 import (
-	"fmt"
-
 	"github.com/solumD/auth/internal/model"
 	modelRepo "github.com/solumD/auth/internal/repository/user/model"
 )
 
 // ToUserFromRepo конвертирует модель пользователя репо слоя в
 // модель сервисного слоя
-func ToUserFromRepo(user *modelRepo.User) (*model.User, error) {
+func ToUserFromRepo(user *modelRepo.User) *model.User {
 	if user == nil {
-		return nil, fmt.Errorf("convertion failed, user model is nil")
+		return nil
 	}
 
 	return &model.User{
@@ -22,5 +20,5 @@ func ToUserFromRepo(user *modelRepo.User) (*model.User, error) {
 		Password:  user.Password,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
-	}, nil
+	}
 }

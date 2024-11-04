@@ -1,25 +1,17 @@
 package converter
 
 import (
-	"fmt"
-
 	"github.com/solumD/auth/internal/model"
 	desc "github.com/solumD/auth/pkg/auth_v1"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var (
-	ErrUserModelIsNil      = fmt.Errorf("user model is nil")
-	ErrDescUserIsNil       = fmt.Errorf("desc user is nil")
-	ErrDescUserUpdateIsNil = fmt.Errorf("desc user update is nil")
-)
-
 // ToDescUserFromService конвертирует сервисную модель пользователя в
 // в gRPC модель
-func ToDescUserFromService(user *model.User) (*desc.GetUserResponse, error) {
+func ToDescUserFromService(user *model.User) *desc.GetUserResponse {
 	if user == nil {
-		return nil, ErrUserModelIsNil
+		return nil
 	}
 
 	var updatedAt *timestamppb.Timestamp
@@ -34,14 +26,14 @@ func ToDescUserFromService(user *model.User) (*desc.GetUserResponse, error) {
 		Role:      desc.Role(user.Role),
 		CreatedAt: timestamppb.New(user.CreatedAt),
 		UpdatedAt: updatedAt,
-	}, nil
+	}
 }
 
 // ToUserFromDescUser конвертирует модель пользователя API слоя в
 // модель сервисного слоя
-func ToUserFromDescUser(user *desc.CreateUserRequest) (*model.User, error) {
+func ToUserFromDescUser(user *desc.CreateUserRequest) *model.User {
 	if user == nil {
-		return nil, ErrDescUserIsNil
+		return nil
 	}
 
 	return &model.User{
@@ -50,14 +42,14 @@ func ToUserFromDescUser(user *desc.CreateUserRequest) (*model.User, error) {
 		Password:        user.Password,
 		PasswordConfirm: user.PasswordConfirm,
 		Role:            int64(user.Role),
-	}, nil
+	}
 }
 
 // ToUserFromDescUpdate конвертирует модель обновления пользователя API слов в
 // модель сервисного слоя
-func ToUserFromDescUpdate(user *desc.UpdateUserRequest) (*model.UserUpdate, error) {
+func ToUserFromDescUpdate(user *desc.UpdateUserRequest) *model.UserUpdate {
 	if user == nil {
-		return nil, ErrDescUserUpdateIsNil
+		return nil
 	}
 
 	u := &model.UserUpdate{}
@@ -76,5 +68,5 @@ func ToUserFromDescUpdate(user *desc.UpdateUserRequest) (*model.UserUpdate, erro
 		u.Email = &email
 	}
 
-	return u, nil
+	return u
 }

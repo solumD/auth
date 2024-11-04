@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/solumD/auth/internal/api/user"
-	"github.com/solumD/auth/internal/converter"
+	"github.com/solumD/auth/internal/api/user/errors"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/service"
 	serviceMocks "github.com/solumD/auth/internal/service/mocks"
@@ -103,7 +103,7 @@ func TestCreateUser(t *testing.T) {
 				req: nil,
 			},
 			want: nil,
-			err:  converter.ErrDescUserIsNil,
+			err:  errors.ErrDescUserIsNil,
 			authServiceMock: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
 				return mock
