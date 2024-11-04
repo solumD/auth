@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 
-	redigo "github.com/gomodule/redigo/redis"
 	authApi "github.com/solumD/auth/internal/api/user"
 	authCache "github.com/solumD/auth/internal/cache"
 	redisCache "github.com/solumD/auth/internal/cache/redis"
@@ -19,6 +18,8 @@ import (
 	authRepoPG "github.com/solumD/auth/internal/repository/user"
 	"github.com/solumD/auth/internal/service"
 	authSrv "github.com/solumD/auth/internal/service/user"
+
+	redigo "github.com/gomodule/redigo/redis"
 )
 
 // Структура приложения со всеми зависимости
