@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"log"
 
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/validation"
@@ -9,7 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// UpdateUser отправляет запрос в репо слой на обновление данных пользователя
+// UpdateUser отправляет запрос в кэш, а затем в репо слой на обновление данных пользователя
 func (s *srv) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb.Empty, error) {
 	if user.Name != nil {
 		err := validation.ValidateName(*user.Name)
@@ -28,6 +29,13 @@ func (s *srv) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb.
 	_, err := s.authRepository.UpdateUser(ctx, user)
 	if err != nil {
 		return nil, err
+	}
+
+	errCache := s.authCache.DeleteUser(ctx, user.ID)
+	if errCache != nil {
+		log.Printf("failed to delete user %d from cache: %v", user.ID, errCache)
+	} else {
+		log.Printf("deleted user %d from cache", user.ID)
 	}
 
 	return &emptypb.Empty{}, nil

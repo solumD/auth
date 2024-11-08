@@ -3,12 +3,14 @@ package user
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/validation"
 )
 
-// CreateUser отправляет запрос в репо слой на создание пользователя
+// CreateUser отправляет запрос в репо слой на создание пользователя, а затем сохраняет данные в кэш
+// CreateUser отправляет запрос в репо слой на создание пользователя, а затем сохраняет данные в кэш
 func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 	err := validation.ValidateName(user.Name)
 	if err != nil {
@@ -36,6 +38,18 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 		userID, errTx = s.authRepository.CreateUser(ctx, user)
 		if errTx != nil {
 			return errTx
+		}
+
+		savedUser, errTx := s.authRepository.GetUser(ctx, userID)
+		if errTx != nil {
+			return errTx
+		}
+
+		errCache := s.authCache.CreateUser(ctx, savedUser)
+		if errCache != nil {
+			log.Printf("failed to save user %d in cache: %v ", userID, errCache)
+		} else {
+			log.Printf("saved user %d in cache", userID)
 		}
 
 		return nil

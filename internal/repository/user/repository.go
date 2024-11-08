@@ -223,9 +223,9 @@ func (r *repo) IsExistByID(ctx context.Context, userID int64) (bool, error) {
 		QueryRaw: query,
 	}
 
-	var name string
+	var one int
 
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&name)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&one)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return false, nil
@@ -254,9 +254,9 @@ func (r *repo) IsEmailExist(ctx context.Context, email string) (bool, error) {
 		QueryRaw: query,
 	}
 
-	var name string
+	var one int
 
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&name)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&one)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return false, nil
@@ -285,9 +285,9 @@ func (r *repo) IsNameExist(ctx context.Context, name string) (bool, error) {
 		QueryRaw: query,
 	}
 
-	var n string
+	var one int
 
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&n)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&one)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return false, nil
