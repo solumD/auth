@@ -24,6 +24,11 @@ type RedisConfig interface {
 	IdleTimeout() time.Duration
 }
 
+// HTTPConfig интерфейс конфига http-сервера
+type HTTPConfig interface {
+	Address() string
+}
+
 // Load читает .env файл по указанному пути
 // и загружает переменные в проект
 func Load(path string) error {

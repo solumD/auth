@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package auth_v1;
 
+import "google/api/annotations.proto"; 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
@@ -9,10 +10,31 @@ import "google/protobuf/wrappers.proto";
 option go_package = "github.com/solumD/auth/pkg/auth_v1;auth_v1";
 
 service AuthV1 {
-    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
-    rpc GetUser(GetUserRequest) returns (GetUserResponse);
-    rpc UpdateUser(UpdateUserRequest) returns (google.protobuf.Empty);
-    rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+        option (google.api.http) = {
+            post: "/auth/v1/user/create"
+            body: "*"
+        };
+    }
+
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+        option (google.api.http) = {
+            get: "/auth/v1/user/get"
+        };
+    }
+
+    rpc UpdateUser(UpdateUserRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            patch: "/auth/v1/user/update"
+            body: "*"
+        };
+    }
+
+    rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/auth/v1/user/delete"
+        };
+    }
 }
 
 enum Role {
