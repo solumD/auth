@@ -9,6 +9,7 @@ import (
 
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
+	"github.com/solumD/auth/internal/interceptor"
 	desc "github.com/solumD/auth/pkg/auth_v1"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -102,7 +103,10 @@ func (a *App) initServiceProvider() {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) {
-	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+	a.grpcServer = grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+	)
 
 	reflection.Register(a.grpcServer)
 
