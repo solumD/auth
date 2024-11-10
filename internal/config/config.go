@@ -29,6 +29,11 @@ type HTTPConfig interface {
 	Address() string
 }
 
+// SwaggerConfig интерфейс конфига swagger http-сервера
+type SwaggerConfig interface {
+	Address() string
+}
+
 // Load читает .env файл по указанному пути
 // и загружает переменные в проект
 func Load(path string) error {

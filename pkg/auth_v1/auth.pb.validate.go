@@ -60,7 +60,7 @@ func (m *CreateUserRequest) validate(all bool) error {
 	if !_CreateUserRequest_Name_Pattern.MatchString(m.GetName()) {
 		err := CreateUserRequestValidationError{
 			field:  "Name",
-			reason: "value does not match regex pattern \"^[A-Za-z0-9]+$\"",
+			reason: "value does not match regex pattern \"^[a-zA-Z0-9]+$\"",
 		}
 		if !all {
 			return err
@@ -73,7 +73,7 @@ func (m *CreateUserRequest) validate(all bool) error {
 	if !_CreateUserRequest_Password_Pattern.MatchString(m.GetPassword()) {
 		err := CreateUserRequestValidationError{
 			field:  "Password",
-			reason: "value does not match regex pattern \"^[A-Za-z0-9]+$\"",
+			reason: "value does not match regex pattern \"^[a-zA-Z0-9]+$\"",
 		}
 		if !all {
 			return err
@@ -84,7 +84,7 @@ func (m *CreateUserRequest) validate(all bool) error {
 	if !_CreateUserRequest_PasswordConfirm_Pattern.MatchString(m.GetPasswordConfirm()) {
 		err := CreateUserRequestValidationError{
 			field:  "PasswordConfirm",
-			reason: "value does not match regex pattern \"^[A-Za-z0-9]+$\"",
+			reason: "value does not match regex pattern \"^[a-zA-Z0-9]+$\"",
 		}
 		if !all {
 			return err
@@ -174,11 +174,11 @@ var _ interface {
 	ErrorName() string
 } = CreateUserRequestValidationError{}
 
-var _CreateUserRequest_Name_Pattern = regexp.MustCompile("^[A-Za-z0-9]+$")
+var _CreateUserRequest_Name_Pattern = regexp.MustCompile("^[a-zA-Z0-9]+$")
 
-var _CreateUserRequest_Password_Pattern = regexp.MustCompile("^[A-Za-z0-9]+$")
+var _CreateUserRequest_Password_Pattern = regexp.MustCompile("^[a-zA-Z0-9]+$")
 
-var _CreateUserRequest_PasswordConfirm_Pattern = regexp.MustCompile("^[A-Za-z0-9]+$")
+var _CreateUserRequest_PasswordConfirm_Pattern = regexp.MustCompile("^[a-zA-Z0-9]+$")
 
 // Validate checks the field values on CreateUserResponse with the rules
 // defined in the proto definition for this message. If any rules are
@@ -581,7 +581,7 @@ func (m *UpdateUserRequest) validate(all bool) error {
 		if !_UpdateUserRequest_Name_Pattern.MatchString(wrapper.GetValue()) {
 			err := UpdateUserRequestValidationError{
 				field:  "Name",
-				reason: "value does not match regex pattern \"^[A-Za-z0-9]+$\"",
+				reason: "value does not match regex pattern \"^[a-zA-Z0-9]+$\"",
 			}
 			if !all {
 				return err
@@ -596,7 +596,7 @@ func (m *UpdateUserRequest) validate(all bool) error {
 		if !_UpdateUserRequest_Email_Pattern.MatchString(wrapper.GetValue()) {
 			err := UpdateUserRequestValidationError{
 				field:  "Email",
-				reason: "value does not match regex pattern \"^[A-Za-z0-9]+$\"",
+				reason: "value does not match regex pattern \"^[a-zA-Z0-9]+$\"",
 			}
 			if !all {
 				return err
@@ -688,9 +688,9 @@ var _ interface {
 	ErrorName() string
 } = UpdateUserRequestValidationError{}
 
-var _UpdateUserRequest_Name_Pattern = regexp.MustCompile("^[A-Za-z0-9]+$")
+var _UpdateUserRequest_Name_Pattern = regexp.MustCompile("^[a-zA-Z0-9]+$")
 
-var _UpdateUserRequest_Email_Pattern = regexp.MustCompile("^[A-Za-z0-9]+$")
+var _UpdateUserRequest_Email_Pattern = regexp.MustCompile("^[a-zA-Z0-9]+$")
 
 // Validate checks the field values on DeleteUserRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the

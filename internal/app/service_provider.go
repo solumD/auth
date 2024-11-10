@@ -24,10 +24,11 @@ import (
 
 // Структура приложения со всеми зависимости
 type serviceProvider struct {
-	pgConfig    config.PGConfig
-	grpcConfig  config.GRPCConfig
-	redisConfig config.RedisConfig
-	httpConfig  config.HTTPConfig
+	pgConfig      config.PGConfig
+	grpcConfig    config.GRPCConfig
+	redisConfig   config.RedisConfig
+	httpConfig    config.HTTPConfig
+	swaggerConfig config.SwaggerConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
@@ -98,6 +99,20 @@ func (s *serviceProvider) HTTPConfig() config.HTTPConfig {
 	}
 
 	return s.httpConfig
+}
+
+// HTTPConfig ининициализирует конфиг http сервера
+func (s *serviceProvider) SwaggerConfig() config.HTTPConfig {
+	if s.swaggerConfig == nil {
+		cfg, err := config.NewSwaggerConfig()
+		if err != nil {
+			log.Fatalf("failed to get swagger config")
+		}
+
+		s.swaggerConfig = cfg
+	}
+
+	return s.swaggerConfig
 }
 
 // DBClient инициализирует клиент базы данных

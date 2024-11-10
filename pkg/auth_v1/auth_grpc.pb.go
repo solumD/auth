@@ -23,9 +23,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthV1Client interface {
+	// Создает нового пользователя
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
+	// Получает пользователя по id
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
+	// Обновляет данные пользователя по id
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Удаляет пользователя по id
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
@@ -77,9 +81,13 @@ func (c *authV1Client) DeleteUser(ctx context.Context, in *DeleteUserRequest, op
 // All implementations must embed UnimplementedAuthV1Server
 // for forward compatibility
 type AuthV1Server interface {
+	// Создает нового пользователя
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
+	// Получает пользователя по id
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
+	// Обновляет данные пользователя по id
 	UpdateUser(context.Context, *UpdateUserRequest) (*emptypb.Empty, error)
+	// Удаляет пользователя по id
 	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAuthV1Server()
 }
