@@ -22,6 +22,7 @@ func New(brokersAddresses []string, cfg *sarama.Config) (kafka.Producer, error) 
 	}, nil
 }
 
+// SendMessage отправляет сообщение в брокер
 func (p *kafkaProducer) SendMessage(msg *sarama.ProducerMessage) (int32, int64, error) {
 	partition, offset, err := p.producer.SendMessage(msg)
 	if err != nil {
@@ -31,6 +32,7 @@ func (p *kafkaProducer) SendMessage(msg *sarama.ProducerMessage) (int32, int64, 
 	return partition, offset, nil
 }
 
+// Close закрывает соединение продюсера
 func (p *kafkaProducer) Close() error {
 	if p.producer != nil {
 		if err := p.producer.Close(); err != nil {

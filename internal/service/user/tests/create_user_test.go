@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/IBM/sarama"
 	"github.com/solumD/auth/internal/cache"
 	cacheMocks "github.com/solumD/auth/internal/cache/mocks"
 	"github.com/solumD/auth/internal/client/db"
@@ -20,6 +19,7 @@ import (
 	"github.com/solumD/auth/internal/service/user"
 	"github.com/solumD/auth/internal/validation"
 
+	"github.com/IBM/sarama"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
