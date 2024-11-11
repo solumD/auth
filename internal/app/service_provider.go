@@ -12,6 +12,8 @@ import (
 	"github.com/solumD/auth/internal/client/db"
 	"github.com/solumD/auth/internal/client/db/pg"
 	"github.com/solumD/auth/internal/client/db/transaction"
+	"github.com/solumD/auth/internal/client/kafka"
+	"github.com/solumD/auth/internal/client/kafka/producer"
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/repository"
@@ -24,11 +26,12 @@ import (
 
 // Структура приложения со всеми зависимости
 type serviceProvider struct {
-	pgConfig      config.PGConfig
-	grpcConfig    config.GRPCConfig
-	redisConfig   config.RedisConfig
-	httpConfig    config.HTTPConfig
-	swaggerConfig config.SwaggerConfig
+	pgConfig            config.PGConfig
+	grpcConfig          config.GRPCConfig
+	redisConfig         config.RedisConfig
+	httpConfig          config.HTTPConfig
+	swaggerConfig       config.SwaggerConfig
+	kafkaProducerConfig config.KafkaProducerConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
@@ -38,6 +41,8 @@ type serviceProvider struct {
 	authRepository repository.AuthRepository
 	authService    service.AuthService
 	authImpl       *authApi.AuthAPI
+
+	kafkaProducer kafka.Producer
 }
 
 // NewServiceProvider возвращает новый объект API слоя
@@ -115,6 +120,20 @@ func (s *serviceProvider) SwaggerConfig() config.HTTPConfig {
 	return s.swaggerConfig
 }
 
+// KafkaProducerConfigининициализирует конфиг продюсера kafka
+func (s *serviceProvider) KafkaProducerConfig() config.KafkaProducerConfig {
+	if s.kafkaProducerConfig == nil {
+		cfg, err := config.NewKafkaProducerConfig()
+		if err != nil {
+			log.Fatalf("failed to get kafka producer konfig")
+		}
+
+		s.kafkaProducerConfig = cfg
+	}
+
+	return s.kafkaProducerConfig
+}
+
 // DBClient инициализирует клиент базы данных
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
@@ -166,6 +185,21 @@ func (s *serviceProvider) CacheClient(ctx context.Context) cache.Client {
 	return s.cacheClient
 }
 
+// KafkaProducer инициализрует продюсер kafka
+func (s *serviceProvider) KafkaProducer(_ context.Context) kafka.Producer {
+	if s.kafkaProducer == nil {
+		p, err := producer.New(s.KafkaProducerConfig().Brokers(), s.kafkaProducerConfig.Config())
+		if err != nil {
+			log.Fatalf("failed to create kafka producer: %v", err)
+		}
+
+		closer.Add(p.Close)
+		s.kafkaProducer = p
+	}
+
+	return s.kafkaProducer
+}
+
 // AuthCache инициализирует кэш
 func (s *serviceProvider) AuthCache(ctx context.Context) authCache.AuthCache {
 	if s.authCache == nil {
@@ -179,7 +213,6 @@ func (s *serviceProvider) AuthCache(ctx context.Context) authCache.AuthCache {
 func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRepository {
 	if s.authRepository == nil {
 		s.authRepository = authRepoPG.NewRepository(s.DBClient(ctx))
-		s.authRepository = authRepoPG.NewRepository(s.DBClient(ctx))
 	}
 
 	return s.authRepository
@@ -188,8 +221,7 @@ func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRe
 // AuthService иницилизирует сервисный слой
 func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
-		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.TxManager(ctx), s.AuthCache(ctx))
-		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.TxManager(ctx), s.AuthCache(ctx))
+		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.TxManager(ctx), s.AuthCache(ctx), s.KafkaProducer(ctx))
 	}
 
 	return s.authService

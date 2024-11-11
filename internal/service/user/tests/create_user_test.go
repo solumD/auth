@@ -2,14 +2,18 @@ package tests
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/IBM/sarama"
 	"github.com/solumD/auth/internal/cache"
 	cacheMocks "github.com/solumD/auth/internal/cache/mocks"
 	"github.com/solumD/auth/internal/client/db"
-	"github.com/solumD/auth/internal/client/db/mocks"
+	txMocks "github.com/solumD/auth/internal/client/db/mocks"
+	"github.com/solumD/auth/internal/client/kafka"
+	kafkaMocks "github.com/solumD/auth/internal/client/kafka/mocks"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/repository"
 	repoMocks "github.com/solumD/auth/internal/repository/mocks"
@@ -26,6 +30,7 @@ func TestCreateUser(t *testing.T) {
 	type authRepositoryMockFunc func(mc *minimock.Controller) repository.AuthRepository
 	type authCacheMockFunc func(mc *minimock.Controller) cache.AuthCache
 	type txManagerMockFunc func(mc *minimock.Controller) db.TxManager
+	type kafkaProducerMockFunc func(mc *minimock.Controller) kafka.Producer
 
 	type args struct {
 		ctx context.Context
@@ -52,6 +57,12 @@ func TestCreateUser(t *testing.T) {
 			Password:        password,
 			PasswordConfirm: passwordConfirm,
 			Role:            int64(role),
+		}
+
+		data, _ = json.Marshal(validReq)
+		msg     = &sarama.ProducerMessage{
+			Topic: "auth",
+			Value: sarama.StringEncoder(data),
 		}
 
 		nameWithSpacesReq = &model.User{
@@ -104,6 +115,7 @@ func TestCreateUser(t *testing.T) {
 		authRepositoryMock authRepositoryMockFunc
 		txManagerMock      txManagerMockFunc
 		authCacheMock      authCacheMockFunc
+		kafkaProducerMock  kafkaProducerMockFunc
 	}{
 		{
 			name: "success from repo",
@@ -120,7 +132,7 @@ func TestCreateUser(t *testing.T) {
 				return mock
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
-				mock := mocks.NewTxManagerMock(mc)
+				mock := txMocks.NewTxManagerMock(mc)
 				mock.ReadCommittedMock.Set(func(ctx context.Context, f db.Handler) (err error) {
 					return f(ctx)
 				})
@@ -129,6 +141,11 @@ func TestCreateUser(t *testing.T) {
 			authCacheMock: func(mc *minimock.Controller) cache.AuthCache {
 				mock := cacheMocks.NewAuthCacheMock(mc)
 				mock.CreateUserMock.Expect(ctx, cacheUser).Return(nil)
+				return mock
+			},
+			kafkaProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
+				mock.SendMessageMock.Expect(msg).Return(1, 1, nil)
 				return mock
 			},
 		},
@@ -146,7 +163,7 @@ func TestCreateUser(t *testing.T) {
 				return mock
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
-				mock := mocks.NewTxManagerMock(mc)
+				mock := txMocks.NewTxManagerMock(mc)
 				mock.ReadCommittedMock.Set(func(ctx context.Context, f db.Handler) (err error) {
 					return f(ctx)
 				})
@@ -154,6 +171,10 @@ func TestCreateUser(t *testing.T) {
 			},
 			authCacheMock: func(mc *minimock.Controller) cache.AuthCache {
 				mock := cacheMocks.NewAuthCacheMock(mc)
+				return mock
+			},
+			kafkaProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
 				return mock
 			},
 		},
@@ -170,11 +191,15 @@ func TestCreateUser(t *testing.T) {
 				return mock
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
-				mock := mocks.NewTxManagerMock(mc)
+				mock := txMocks.NewTxManagerMock(mc)
 				return mock
 			},
 			authCacheMock: func(mc *minimock.Controller) cache.AuthCache {
 				mock := cacheMocks.NewAuthCacheMock(mc)
+				return mock
+			},
+			kafkaProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
 				return mock
 			},
 		},
@@ -191,11 +216,15 @@ func TestCreateUser(t *testing.T) {
 				return mock
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
-				mock := mocks.NewTxManagerMock(mc)
+				mock := txMocks.NewTxManagerMock(mc)
 				return mock
 			},
 			authCacheMock: func(mc *minimock.Controller) cache.AuthCache {
 				mock := cacheMocks.NewAuthCacheMock(mc)
+				return mock
+			},
+			kafkaProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
 				return mock
 			},
 		},
@@ -212,11 +241,15 @@ func TestCreateUser(t *testing.T) {
 				return mock
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
-				mock := mocks.NewTxManagerMock(mc)
+				mock := txMocks.NewTxManagerMock(mc)
 				return mock
 			},
 			authCacheMock: func(mc *minimock.Controller) cache.AuthCache {
 				mock := cacheMocks.NewAuthCacheMock(mc)
+				return mock
+			},
+			kafkaProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
 				return mock
 			},
 		},
@@ -233,11 +266,15 @@ func TestCreateUser(t *testing.T) {
 				return mock
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
-				mock := mocks.NewTxManagerMock(mc)
+				mock := txMocks.NewTxManagerMock(mc)
 				return mock
 			},
 			authCacheMock: func(mc *minimock.Controller) cache.AuthCache {
 				mock := cacheMocks.NewAuthCacheMock(mc)
+				return mock
+			},
+			kafkaProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
 				return mock
 			},
 		},
@@ -251,8 +288,9 @@ func TestCreateUser(t *testing.T) {
 			authCacheMock := tt.authCacheMock(mc)
 			authRepoMock := tt.authRepositoryMock(mc)
 			txManagerMock := tt.txManagerMock(mc)
+			kafkaProducerMock := tt.kafkaProducerMock(mc)
 
-			service := user.NewMockService(authRepoMock, txManagerMock, authCacheMock)
+			service := user.NewMockService(authRepoMock, txManagerMock, authCacheMock, kafkaProducerMock)
 
 			newID, err := service.CreateUser(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)

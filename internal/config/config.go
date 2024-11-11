@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/IBM/sarama"
 	"github.com/joho/godotenv"
 )
 
@@ -32,6 +33,12 @@ type HTTPConfig interface {
 // SwaggerConfig интерфейс конфига swagger http-сервера
 type SwaggerConfig interface {
 	Address() string
+}
+
+// KafkaProducerConfig интерфейс конфига продюсера kafka
+type KafkaProducerConfig interface {
+	Brokers() []string
+	Config() *sarama.Config
 }
 
 // Load читает .env файл по указанному пути

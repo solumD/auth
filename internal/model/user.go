@@ -7,14 +7,14 @@ import (
 
 // User модель пользователя сервисного слоя
 type User struct {
-	ID              int64
-	Name            string
-	Email           string
-	Password        string
-	PasswordConfirm string
-	Role            int64
-	CreatedAt       time.Time
-	UpdatedAt       sql.NullTime
+	ID              int64        `json:"id"`
+	Name            string       `json:"name"`
+	Email           string       `json:"email"`
+	Password        string       `json:"password"`
+	PasswordConfirm string       `json:"password_confirm"`
+	Role            int64        `json:"role"`
+	CreatedAt       time.Time    `json:"created_at"`
+	UpdatedAt       sql.NullTime `json:"updated_at"`
 }
 
 // UserUpdate модель обновления пользователя сервисного слоя

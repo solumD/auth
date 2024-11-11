@@ -2,14 +2,20 @@ package user
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/validation"
+
+	"github.com/IBM/sarama"
 )
 
-// CreateUser отправляет запрос в репо слой на создание пользователя, а затем сохраняет данные в кэш
+const (
+	authTopicName = "auth"
+)
+
 // CreateUser отправляет запрос в репо слой на создание пользователя, а затем сохраняет данные в кэш
 func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 	err := validation.ValidateName(user.Name)
@@ -47,9 +53,9 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 
 		errCache := s.authCache.CreateUser(ctx, savedUser)
 		if errCache != nil {
-			log.Printf("failed to save user %d in cache: %v ", userID, errCache)
+			log.Printf("failed to save user %d in cache: %v\n", userID, errCache)
 		} else {
-			log.Printf("saved user %d in cache", userID)
+			log.Printf("saved user %d in cache\n", userID)
 		}
 
 		return nil
@@ -57,6 +63,23 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	data, err := json.Marshal(user)
+	if err != nil {
+		log.Printf("failed to marshall data: %v\n", err)
+	}
+
+	msg := &sarama.ProducerMessage{
+		Topic: authTopicName,
+		Value: sarama.StringEncoder(data),
+	}
+
+	p, o, err := s.kafkaProdcuer.SendMessage(msg)
+	if err != nil {
+		log.Printf("failed to send message in Kafka: %v\n", err)
+	}
+
+	log.Printf("message sent to partition %d with offset %d\n", p, o)
 
 	return userID, nil
 }
