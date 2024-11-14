@@ -17,7 +17,7 @@ import (
 	"github.com/solumD/auth/internal/repository"
 	repoMocks "github.com/solumD/auth/internal/repository/mocks"
 	"github.com/solumD/auth/internal/service/user"
-	"github.com/solumD/auth/internal/validation"
+	"github.com/solumD/auth/internal/utils/validation"
 
 	"github.com/IBM/sarama"
 	"github.com/brianvoe/gofakeit/v7"

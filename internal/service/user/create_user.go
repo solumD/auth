@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/solumD/auth/internal/model"
-	"github.com/solumD/auth/internal/validation"
+	"github.com/solumD/auth/internal/utils/validation"
 
 	"github.com/IBM/sarama"
 )

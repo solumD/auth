@@ -188,7 +188,7 @@ func (s *serviceProvider) CacheClient(ctx context.Context) cache.Client {
 // KafkaProducer инициализрует продюсер kafka
 func (s *serviceProvider) KafkaProducer(_ context.Context) kafka.Producer {
 	if s.kafkaProducer == nil {
-		p, err := producer.New(s.KafkaProducerConfig().Brokers(), s.kafkaProducerConfig.Config())
+		p, err := producer.New(s.KafkaProducerConfig().Brokers(), s.KafkaProducerConfig().Config())
 		if err != nil {
 			log.Fatalf("failed to create kafka producer: %v", err)
 		}

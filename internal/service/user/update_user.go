@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/solumD/auth/internal/model"
-	"github.com/solumD/auth/internal/validation"
+	"github.com/solumD/auth/internal/utils/validation"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )

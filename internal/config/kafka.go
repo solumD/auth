@@ -34,6 +34,10 @@ func NewKafkaProducerConfig() (KafkaProducerConfig, error) {
 
 // Brokers returns list of broker's addresses
 func (cfg *kafkaProducerConfig) Brokers() []string {
+	if cfg.brokers == nil {
+		return []string{}
+	}
+
 	return cfg.brokers
 }
 
