@@ -2,7 +2,7 @@ package converter
 
 import (
 	"github.com/solumD/auth/internal/model"
-	desc "github.com/solumD/auth/pkg/auth_v1"
+	desc "github.com/solumD/auth/pkg/user_v1"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

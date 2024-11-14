@@ -34,7 +34,7 @@ type repo struct {
 }
 
 // NewRepository возвращает новый объект репо слоя
-func NewRepository(db db.Client) repository.AuthRepository {
+func NewRepository(db db.Client) repository.UserRepository {
 	return &repo{
 		db: db,
 	}

@@ -22,7 +22,7 @@ import (
 
 func TestGetUser(t *testing.T) {
 	t.Parallel()
-	type authRepositoryMockFunc func(mc *minimock.Controller) repository.AuthRepository
+	type UserRepositoryMockFunc func(mc *minimock.Controller) repository.UserRepository
 	type authCacheMockFunc func(mc *minimock.Controller) cache.AuthCache
 	type txManagerMockFunc func(mc *minimock.Controller) db.TxManager
 
@@ -61,7 +61,7 @@ func TestGetUser(t *testing.T) {
 		args               args
 		want               *model.User
 		err                error
-		authRepositoryMock authRepositoryMockFunc
+		UserRepositoryMock UserRepositoryMockFunc
 		txManagerMock      txManagerMockFunc
 		authCacheMock      authCacheMockFunc
 	}{
@@ -73,8 +73,8 @@ func TestGetUser(t *testing.T) {
 			},
 			want: res,
 			err:  nil,
-			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-				mock := repoMocks.NewAuthRepositoryMock(mc)
+			UserRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
+				mock := repoMocks.NewUserRepositoryMock(mc)
 				return mock
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
@@ -95,8 +95,8 @@ func TestGetUser(t *testing.T) {
 			},
 			want: res,
 			err:  nil,
-			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-				mock := repoMocks.NewAuthRepositoryMock(mc)
+			UserRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
+				mock := repoMocks.NewUserRepositoryMock(mc)
 				mock.GetUserMock.Expect(ctx, req).Return(res, nil)
 				return mock
 			},
@@ -119,8 +119,8 @@ func TestGetUser(t *testing.T) {
 			},
 			want: nil,
 			err:  repoErr,
-			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-				mock := repoMocks.NewAuthRepositoryMock(mc)
+			UserRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
+				mock := repoMocks.NewUserRepositoryMock(mc)
 				mock.GetUserMock.Expect(ctx, req).Return(nil, repoErr)
 				return mock
 			},
@@ -142,7 +142,7 @@ func TestGetUser(t *testing.T) {
 			t.Parallel()
 
 			authCacheMock := tt.authCacheMock(mc)
-			authRepoMock := tt.authRepositoryMock(mc)
+			authRepoMock := tt.UserRepositoryMock(mc)
 			txManagerMock := tt.txManagerMock(mc)
 
 			service := user.NewMockService(authRepoMock, txManagerMock, authCacheMock)

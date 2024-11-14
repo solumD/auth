@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package auth_v1;
+package user_v1;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
@@ -9,11 +9,11 @@ import "validate/validate.proto";
 import "google/api/annotations.proto"; 
 import "protoc-gen-openapiv2/options/annotations.proto";
 
-option go_package = "github.com/solumD/auth/pkg/auth_v1;auth_v1";
+option go_package = "github.com/solumD/auth/pkg/user_v1;user_v1";
 
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     info: {
-        title: "Auth API"
+        title: "User API"
         version: "1.0.0"
         contact: {
             name: "Dmitry Kononov"
@@ -28,11 +28,11 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     produces: "application/json",
 };
 
-service AuthV1 {
+service UserV1 {
     // Создает нового пользователя
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
         option (google.api.http) = {
-            post: "/auth/v1/user/create"
+            post: "/user/v1/create"
             body: "*"
         };
     }
@@ -40,14 +40,14 @@ service AuthV1 {
     // Получает пользователя по id
     rpc GetUser(GetUserRequest) returns (GetUserResponse) {
         option (google.api.http) = {
-            get: "/auth/v1/user/get"
+            get: "/user/v1/get"
         };
     }
 
     // Обновляет данные пользователя по id
     rpc UpdateUser(UpdateUserRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            patch: "/auth/v1/user/update"
+            patch: "/user/v1/update"
             body: "*"
         };
     }
@@ -55,7 +55,7 @@ service AuthV1 {
     // Удаляет пользователя по id
     rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            delete: "/auth/v1/user/delete"
+            delete: "/user/v1/delete"
         };
     }
 }

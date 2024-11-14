@@ -6,13 +6,13 @@ import (
 
 	"github.com/solumD/auth/internal/api/user/errors"
 	"github.com/solumD/auth/internal/converter"
-	desc "github.com/solumD/auth/pkg/auth_v1"
+	desc "github.com/solumD/auth/pkg/user_v1"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // UpdateUser - отправляет запрос в сервисный слой на обновление данных пользователя
-func (i *AuthAPI) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*emptypb.Empty, error) {
+func (i *API) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*emptypb.Empty, error) {
 	convertedReq := converter.ToUserFromDescUpdate(req)
 	if convertedReq == nil {
 		return nil, errors.ErrDescUserUpdateIsNil

@@ -17,7 +17,7 @@ func (s *srv) GetUser(ctx context.Context, userID int64) (*model.User, error) {
 		return user, nil
 	}
 
-	user, err = s.authRepository.GetUser(ctx, userID)
+	user, err = s.userRepository.GetUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

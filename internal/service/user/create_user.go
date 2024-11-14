@@ -41,12 +41,12 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 
 	err = s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
-		userID, errTx = s.authRepository.CreateUser(ctx, user)
+		userID, errTx = s.userRepository.CreateUser(ctx, user)
 		if errTx != nil {
 			return errTx
 		}
 
-		savedUser, errTx := s.authRepository.GetUser(ctx, userID)
+		savedUser, errTx := s.userRepository.GetUser(ctx, userID)
 		if errTx != nil {
 			return errTx
 		}

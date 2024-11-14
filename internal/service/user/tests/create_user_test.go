@@ -27,7 +27,7 @@ import (
 
 func TestCreateUser(t *testing.T) {
 	t.Parallel()
-	type authRepositoryMockFunc func(mc *minimock.Controller) repository.AuthRepository
+	type UserRepositoryMockFunc func(mc *minimock.Controller) repository.UserRepository
 	type authCacheMockFunc func(mc *minimock.Controller) cache.AuthCache
 	type txManagerMockFunc func(mc *minimock.Controller) db.TxManager
 	type kafkaProducerMockFunc func(mc *minimock.Controller) kafka.Producer
@@ -114,7 +114,7 @@ func TestCreateUser(t *testing.T) {
 		args               args
 		want               int64
 		err                error
-		authRepositoryMock authRepositoryMockFunc
+		UserRepositoryMock UserRepositoryMockFunc
 		txManagerMock      txManagerMockFunc
 		authCacheMock      authCacheMockFunc
 		kafkaProducerMock  kafkaProducerMockFunc
@@ -127,8 +127,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			want: id,
 			err:  nil,
-			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-				mock := repoMocks.NewAuthRepositoryMock(mc)
+			UserRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
+				mock := repoMocks.NewUserRepositoryMock(mc)
 				mock.CreateUserMock.Expect(ctx, validReq).Return(id, nil)
 				mock.GetUserMock.Expect(ctx, id).Return(cacheUser, nil)
 				return mock
@@ -159,8 +159,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			want: 0,
 			err:  repoErr,
-			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-				mock := repoMocks.NewAuthRepositoryMock(mc)
+			UserRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
+				mock := repoMocks.NewUserRepositoryMock(mc)
 				mock.CreateUserMock.Expect(ctx, validReq).Return(0, repoErr)
 				return mock
 			},
@@ -188,8 +188,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			want: 0,
 			err:  validation.ErrNameContainsSpaces,
-			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-				mock := repoMocks.NewAuthRepositoryMock(mc)
+			UserRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
+				mock := repoMocks.NewUserRepositoryMock(mc)
 				return mock
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
@@ -213,8 +213,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			want: 0,
 			err:  validation.ErrInvalidEmail,
-			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-				mock := repoMocks.NewAuthRepositoryMock(mc)
+			UserRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
+				mock := repoMocks.NewUserRepositoryMock(mc)
 				return mock
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
@@ -238,8 +238,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			want: 0,
 			err:  validation.ErrPassTooShort,
-			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-				mock := repoMocks.NewAuthRepositoryMock(mc)
+			UserRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
+				mock := repoMocks.NewUserRepositoryMock(mc)
 				return mock
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
@@ -263,8 +263,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			want: 0,
 			err:  differentPassesErr,
-			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-				mock := repoMocks.NewAuthRepositoryMock(mc)
+			UserRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
+				mock := repoMocks.NewUserRepositoryMock(mc)
 				return mock
 			},
 			txManagerMock: func(mc *minimock.Controller) db.TxManager {
@@ -288,7 +288,7 @@ func TestCreateUser(t *testing.T) {
 			t.Parallel()
 
 			authCacheMock := tt.authCacheMock(mc)
-			authRepoMock := tt.authRepositoryMock(mc)
+			authRepoMock := tt.UserRepositoryMock(mc)
 			txManagerMock := tt.txManagerMock(mc)
 			kafkaProducerMock := tt.kafkaProducerMock(mc)
 

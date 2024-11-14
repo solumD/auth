@@ -11,7 +11,7 @@ import (
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/interceptor"
-	desc "github.com/solumD/auth/pkg/auth_v1"
+	desc "github.com/solumD/auth/pkg/user_v1"
 	_ "github.com/solumD/auth/statik" //
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -140,7 +140,7 @@ func (a *App) initGRPCServer(ctx context.Context) {
 
 	reflection.Register(a.grpcServer)
 
-	desc.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthAPI(ctx))
+	desc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserAPI(ctx))
 
 }
 
@@ -151,7 +151,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	err := desc.RegisterAuthV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
+	err := desc.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
 	if err != nil {
 		return err
 	}

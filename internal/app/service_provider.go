@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	authApi "github.com/solumD/auth/internal/api/user"
+	userApi "github.com/solumD/auth/internal/api/user"
 	authCache "github.com/solumD/auth/internal/cache"
 	redisCache "github.com/solumD/auth/internal/cache/redis"
 	"github.com/solumD/auth/internal/client/cache"
@@ -17,9 +17,9 @@ import (
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/repository"
-	authRepoPG "github.com/solumD/auth/internal/repository/user"
+	userRepo "github.com/solumD/auth/internal/repository/user"
 	"github.com/solumD/auth/internal/service"
-	authSrv "github.com/solumD/auth/internal/service/user"
+	userSrv "github.com/solumD/auth/internal/service/user"
 
 	redigo "github.com/gomodule/redigo/redis"
 )
@@ -38,9 +38,9 @@ type serviceProvider struct {
 	cacheClient cache.Client
 
 	authCache      authCache.AuthCache
-	authRepository repository.AuthRepository
-	authService    service.AuthService
-	authImpl       *authApi.AuthAPI
+	userRepository repository.UserRepository
+	userService    service.UserService
+	userImpl       *userApi.API
 
 	kafkaProducer kafka.Producer
 }
@@ -209,29 +209,29 @@ func (s *serviceProvider) AuthCache(ctx context.Context) authCache.AuthCache {
 	return s.authCache
 }
 
-// AuthRepository инициализирует репо слой
-func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRepository {
-	if s.authRepository == nil {
-		s.authRepository = authRepoPG.NewRepository(s.DBClient(ctx))
+// UserRepository инициализирует репо слой
+func (s *serviceProvider) UserReposistory(ctx context.Context) repository.UserRepository {
+	if s.userRepository == nil {
+		s.userRepository = userRepo.NewRepository(s.DBClient(ctx))
 	}
 
-	return s.authRepository
+	return s.userRepository
 }
 
-// AuthService иницилизирует сервисный слой
-func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
-	if s.authService == nil {
-		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.TxManager(ctx), s.AuthCache(ctx), s.KafkaProducer(ctx))
+// UserService иницилизирует сервисный слой
+func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
+	if s.userService == nil {
+		s.userService = userSrv.NewService(s.UserReposistory(ctx), s.TxManager(ctx), s.AuthCache(ctx), s.KafkaProducer(ctx))
 	}
 
-	return s.authService
+	return s.userService
 }
 
-// AuthAPI инициализирует api слой
-func (s *serviceProvider) AuthAPI(ctx context.Context) *authApi.AuthAPI {
-	if s.authImpl == nil {
-		s.authImpl = authApi.NewAuthAPI(s.AuthService(ctx))
+// UserAPI инициализирует api слой
+func (s *serviceProvider) UserAPI(ctx context.Context) *userApi.API {
+	if s.userImpl == nil {
+		s.userImpl = userApi.NewAPI(s.UserService(ctx))
 	}
 
-	return s.authImpl
+	return s.userImpl
 }

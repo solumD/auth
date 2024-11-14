@@ -10,7 +10,7 @@ import (
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/service"
 	serviceMocks "github.com/solumD/auth/internal/service/mocks"
-	desc "github.com/solumD/auth/pkg/auth_v1"
+	desc "github.com/solumD/auth/pkg/user_v1"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/gojuno/minimock/v3"
@@ -19,7 +19,7 @@ import (
 
 func TestCreateUser(t *testing.T) {
 	t.Parallel()
-	type authServiceMockFunc func(mn *minimock.Controller) service.AuthService
+	type userServiceMockFunc func(mn *minimock.Controller) service.UserService
 
 	type args struct {
 		ctx context.Context
@@ -66,7 +66,7 @@ func TestCreateUser(t *testing.T) {
 		args            args
 		want            *desc.CreateUserResponse
 		err             error
-		authServiceMock authServiceMockFunc
+		userServiceMock userServiceMockFunc
 	}{
 		{
 			name: "success case",
@@ -76,8 +76,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			want: res,
 			err:  nil,
-			authServiceMock: func(mc *minimock.Controller) service.AuthService {
-				mock := serviceMocks.NewAuthServiceMock(mc)
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
+				mock := serviceMocks.NewUserServiceMock(mc)
 				mock.CreateUserMock.Expect(ctx, info).Return(id, nil)
 				return mock
 			},
@@ -90,8 +90,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			want: nil,
 			err:  serviceErr,
-			authServiceMock: func(mc *minimock.Controller) service.AuthService {
-				mock := serviceMocks.NewAuthServiceMock(mc)
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
+				mock := serviceMocks.NewUserServiceMock(mc)
 				mock.CreateUserMock.Expect(ctx, info).Return(0, serviceErr)
 				return mock
 			},
@@ -104,8 +104,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			want: nil,
 			err:  errors.ErrDescUserIsNil,
-			authServiceMock: func(mc *minimock.Controller) service.AuthService {
-				mock := serviceMocks.NewAuthServiceMock(mc)
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
+				mock := serviceMocks.NewUserServiceMock(mc)
 				return mock
 			},
 		},
@@ -116,8 +116,8 @@ func TestCreateUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			authServiceMock := tt.authServiceMock(mc)
-			api := user.NewAuthAPI(authServiceMock)
+			userServiceMock := tt.userServiceMock(mc)
+			api := user.NewAPI(userServiceMock)
 
 			res, err := api.CreateUser(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)
