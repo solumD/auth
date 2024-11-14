@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/IBM/sarama"
 	"github.com/joho/godotenv"
 )
 
@@ -22,6 +23,22 @@ type RedisConfig interface {
 	ConnectionTimeout() time.Duration
 	MaxIdle() int
 	IdleTimeout() time.Duration
+}
+
+// HTTPConfig интерфейс конфига http-сервера
+type HTTPConfig interface {
+	Address() string
+}
+
+// SwaggerConfig интерфейс конфига swagger http-сервера
+type SwaggerConfig interface {
+	Address() string
+}
+
+// KafkaProducerConfig интерфейс конфига продюсера kafka
+type KafkaProducerConfig interface {
+	Brokers() []string
+	Config() *sarama.Config
 }
 
 // Load читает .env файл по указанному пути

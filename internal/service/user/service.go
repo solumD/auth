@@ -3,6 +3,7 @@ package user
 import (
 	"github.com/solumD/auth/internal/cache"
 	"github.com/solumD/auth/internal/client/db"
+	"github.com/solumD/auth/internal/client/kafka"
 	"github.com/solumD/auth/internal/repository"
 	"github.com/solumD/auth/internal/service"
 )
@@ -13,17 +14,21 @@ type srv struct {
 	authRepository repository.AuthRepository
 	txManager      db.TxManager
 	authCache      cache.AuthCache
+	kafkaProdcuer  kafka.Producer
 }
 
 // NewService возвращает объект сервисного слоя
 func NewService(
 	authRepository repository.AuthRepository,
 	txManager db.TxManager,
-	authCache cache.AuthCache) service.AuthService {
+	authCache cache.AuthCache,
+	kafkaProducer kafka.Producer,
+) service.AuthService {
 	return &srv{
 		authRepository: authRepository,
 		txManager:      txManager,
 		authCache:      authCache,
+		kafkaProdcuer:  kafkaProducer,
 	}
 }
 
@@ -39,6 +44,8 @@ func NewMockService(deps ...interface{}) service.AuthService {
 			serv.authCache = s
 		case db.TxManager:
 			serv.txManager = s
+		case kafka.Producer:
+			serv.kafkaProdcuer = s
 		}
 	}
 

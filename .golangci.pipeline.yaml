@@ -50,3 +50,4 @@ issues:
     - should have a package comment
     - don't use an underscore in package name
     - G115
+    - G112
