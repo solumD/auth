@@ -65,6 +65,8 @@ func TestCreateUser(t *testing.T) {
 			Value: sarama.StringEncoder(data),
 		}
 
+		producerRes = &kafka.Response{Partition: 1, Offset: 1, Err: nil}
+
 		nameWithSpacesReq = &model.User{
 			Name:            gofakeit.Username() + " " + gofakeit.Username(),
 			Email:           email,
@@ -145,7 +147,7 @@ func TestCreateUser(t *testing.T) {
 			},
 			kafkaProducerMock: func(mc *minimock.Controller) kafka.Producer {
 				mock := kafkaMocks.NewProducerMock(mc)
-				mock.SendMessageMock.Expect(msg).Return(1, 1, nil)
+				mock.SendMessageMock.Expect(msg).Return(producerRes)
 				return mock
 			},
 		},

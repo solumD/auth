@@ -25,6 +25,11 @@ import (
 
 const configPath = ".env"
 
+var (
+	corsAllowedMethods = []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"}
+	corsAllowedHeaders = []string{"Accept", "Content-Type", "Content-Length", "Authorization"}
+)
+
 // App структура приложения
 type App struct {
 	serviceProvider *serviceProvider
@@ -153,8 +158,8 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 
 	corsMiddleware := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Content-Type", "Content-Length", "Authorization"},
+		AllowedMethods:   corsAllowedMethods,
+		AllowedHeaders:   corsAllowedHeaders,
 		AllowCredentials: true,
 	})
 

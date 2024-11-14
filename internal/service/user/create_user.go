@@ -74,12 +74,12 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 		Value: sarama.StringEncoder(data),
 	}
 
-	p, o, err := s.kafkaProdcuer.SendMessage(msg)
-	if err != nil {
+	res := s.kafkaProdcuer.SendMessage(msg)
+	if res.Err != nil {
 		log.Printf("failed to send message in Kafka: %v\n", err)
 	}
 
-	log.Printf("message sent to partition %d with offset %d\n", p, o)
+	log.Printf("message sent to partition %d with offset %d\n", res.Partition, res.Offset)
 
 	return userID, nil
 }
