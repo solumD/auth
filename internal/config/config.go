@@ -41,6 +41,14 @@ type KafkaProducerConfig interface {
 	Config() *sarama.Config
 }
 
+// AuthConfig интерфейс конфига auth сервиса
+type AuthConfig interface {
+	RefreshTokenSecretKey() []byte
+	AccessTokenSecretKey() []byte
+	RefreshTokenExp() time.Duration
+	AccessTokenExp() time.Duration
+}
+
 // Load читает .env файл по указанному пути
 // и загружает переменные в проект
 func Load(path string) error {

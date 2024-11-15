@@ -10,7 +10,7 @@ import (
 
 // GetUser - отправляет запрос в сервисный слой на получение данных пользователя
 func (i *API) GetUser(ctx context.Context, req *desc.GetUserRequest) (*desc.GetUserResponse, error) {
-	user, err := i.authService.GetUser(ctx, req.GetId())
+	user, err := i.userService.GetUser(ctx, req.GetId())
 	if err != nil {
 		return nil, err
 	}

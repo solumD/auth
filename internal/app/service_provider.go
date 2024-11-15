@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	authApi "github.com/solumD/auth/internal/api/auth"
 	userApi "github.com/solumD/auth/internal/api/user"
 	authCache "github.com/solumD/auth/internal/cache"
 	redisCache "github.com/solumD/auth/internal/cache/redis"
@@ -17,8 +18,10 @@ import (
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/repository"
+	authRepo "github.com/solumD/auth/internal/repository/auth"
 	userRepo "github.com/solumD/auth/internal/repository/user"
 	"github.com/solumD/auth/internal/service"
+	authSrv "github.com/solumD/auth/internal/service/auth"
 	userSrv "github.com/solumD/auth/internal/service/user"
 
 	redigo "github.com/gomodule/redigo/redis"
@@ -32,17 +35,22 @@ type serviceProvider struct {
 	httpConfig          config.HTTPConfig
 	swaggerConfig       config.SwaggerConfig
 	kafkaProducerConfig config.KafkaProducerConfig
+	authConfig          config.AuthConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
 	cacheClient cache.Client
+
+	kafkaProducer kafka.Producer
 
 	authCache      authCache.AuthCache
 	userRepository repository.UserRepository
 	userService    service.UserService
 	userImpl       *userApi.API
 
-	kafkaProducer kafka.Producer
+	authRepository repository.AuthRepository
+	authService    service.AuthService
+	authImpl       *authApi.API
 }
 
 // NewServiceProvider возвращает новый объект API слоя
@@ -120,7 +128,21 @@ func (s *serviceProvider) SwaggerConfig() config.HTTPConfig {
 	return s.swaggerConfig
 }
 
-// KafkaProducerConfigининициализирует конфиг продюсера kafka
+// AuthConfig инициализирует конфиг auth сервиса
+func (s *serviceProvider) AuthConfig() config.AuthConfig {
+	if s.authConfig == nil {
+		cfg, err := config.NewAuthConfig()
+		if err != nil {
+			log.Fatalf("failed to get auth config")
+		}
+
+		s.authConfig = cfg
+	}
+
+	return s.authConfig
+}
+
+// KafkaProducerConfig ининициализирует конфиг продюсера kafka
 func (s *serviceProvider) KafkaProducerConfig() config.KafkaProducerConfig {
 	if s.kafkaProducerConfig == nil {
 		cfg, err := config.NewKafkaProducerConfig()
@@ -209,7 +231,7 @@ func (s *serviceProvider) AuthCache(ctx context.Context) authCache.AuthCache {
 	return s.authCache
 }
 
-// UserRepository инициализирует репо слой
+// UserRepository инициализирует репо слой user
 func (s *serviceProvider) UserReposistory(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
 		s.userRepository = userRepo.NewRepository(s.DBClient(ctx))
@@ -218,7 +240,7 @@ func (s *serviceProvider) UserReposistory(ctx context.Context) repository.UserRe
 	return s.userRepository
 }
 
-// UserService иницилизирует сервисный слой
+// UserService иницилизирует сервисный слой user
 func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
 		s.userService = userSrv.NewService(s.UserReposistory(ctx), s.TxManager(ctx), s.AuthCache(ctx), s.KafkaProducer(ctx))
@@ -227,11 +249,38 @@ func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	return s.userService
 }
 
-// UserAPI инициализирует api слой
+// UserAPI инициализирует api слой user
 func (s *serviceProvider) UserAPI(ctx context.Context) *userApi.API {
 	if s.userImpl == nil {
 		s.userImpl = userApi.NewAPI(s.UserService(ctx))
 	}
 
 	return s.userImpl
+}
+
+// AuthRepository инициализирует репо слой auth
+func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRepository {
+	if s.authRepository == nil {
+		s.authRepository = authRepo.NewRepository(s.DBClient(ctx))
+	}
+
+	return s.authRepository
+}
+
+// AuthService иницилизирует сервисный слой auth
+func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
+	if s.authService == nil {
+		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.AuthConfig())
+	}
+
+	return s.authService
+}
+
+// AuthAPI инициализирует api слой auth
+func (s *serviceProvider) AuthAPI(ctx context.Context) *authApi.API {
+	if s.authImpl == nil {
+		s.authImpl = authApi.NewAPI(s.AuthService(ctx))
+	}
+
+	return s.authImpl
 }

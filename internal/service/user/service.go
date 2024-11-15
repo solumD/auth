@@ -14,7 +14,7 @@ type srv struct {
 	userRepository repository.UserRepository
 	txManager      db.TxManager
 	authCache      cache.AuthCache
-	kafkaProdcuer  kafka.Producer
+	kafkaProducer  kafka.Producer
 }
 
 // NewService возвращает объект сервисного слоя
@@ -28,7 +28,7 @@ func NewService(
 		userRepository: userRepository,
 		txManager:      txManager,
 		authCache:      authCache,
-		kafkaProdcuer:  kafkaProducer,
+		kafkaProducer:  kafkaProducer,
 	}
 }
 
@@ -45,7 +45,7 @@ func NewMockService(deps ...interface{}) service.UserService {
 		case db.TxManager:
 			serv.txManager = s
 		case kafka.Producer:
-			serv.kafkaProdcuer = s
+			serv.kafkaProducer = s
 		}
 	}
 

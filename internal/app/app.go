@@ -11,13 +11,15 @@ import (
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/interceptor"
-	desc "github.com/solumD/auth/pkg/user_v1"
+	descAuth "github.com/solumD/auth/pkg/auth_v1"
+	descUser "github.com/solumD/auth/pkg/user_v1"
 	_ "github.com/solumD/auth/statik" //
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
@@ -127,19 +129,20 @@ func (a *App) initServiceProvider() {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) {
-	/*creds, err := credentials.NewServerTLSFromFile("./tls/service/service.pem", "./tls/service/service.key")
+	creds, err := credentials.NewServerTLSFromFile("./tls/service/service.pem", "./tls/service/service.key")
 	if err != nil {
 		log.Fatalf("failed to load TLS keys: %v", err)
-	}*/
+	}
 
 	a.grpcServer = grpc.NewServer(
-		grpc.Creds(insecure.NewCredentials()),
+		grpc.Creds(creds),
 		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
 	)
 
 	reflection.Register(a.grpcServer)
 
-	desc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserAPI(ctx))
+	descUser.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserAPI(ctx))
+	descAuth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthAPI(ctx))
 
 }
 
@@ -150,7 +153,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	err := desc.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
+	err := descUser.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
 	if err != nil {
 		return err
 	}

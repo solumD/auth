@@ -74,7 +74,7 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 		Value: sarama.StringEncoder(data),
 	}
 
-	res := s.kafkaProdcuer.SendMessage(msg)
+	res := s.kafkaProducer.SendMessage(msg)
 	if res.Err != nil {
 		log.Printf("failed to send message in Kafka: %v\n", err)
 	}

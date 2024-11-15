@@ -18,7 +18,7 @@ func (i *API) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*emp
 		return nil, errors.ErrDescUserUpdateIsNil
 	}
 
-	_, err := i.authService.UpdateUser(ctx, convertedReq)
+	_, err := i.userService.UpdateUser(ctx, convertedReq)
 	if err != nil {
 		return nil, err
 	}
