@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solumD/auth/internal/utils/hash"
 	"github.com/solumD/auth/internal/utils/jwt"
 	"github.com/solumD/auth/internal/utils/validation"
 )
@@ -25,7 +26,8 @@ func (s *srv) Login(ctx context.Context, name string, password string) (string, 
 		return "", err
 	}
 
-	if userInfo.Password != password {
+	err = hash.CompareHashAndPass(password, userInfo.Password)
+	if err != nil {
 		return "", fmt.Errorf("invalid password")
 	}
 
