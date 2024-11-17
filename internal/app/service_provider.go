@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	accessApi "github.com/solumD/auth/internal/api/access"
 	authApi "github.com/solumD/auth/internal/api/auth"
 	userApi "github.com/solumD/auth/internal/api/user"
 	authCache "github.com/solumD/auth/internal/cache"
@@ -21,6 +22,7 @@ import (
 	authRepo "github.com/solumD/auth/internal/repository/auth"
 	userRepo "github.com/solumD/auth/internal/repository/user"
 	"github.com/solumD/auth/internal/service"
+	"github.com/solumD/auth/internal/service/access"
 	authSrv "github.com/solumD/auth/internal/service/auth"
 	userSrv "github.com/solumD/auth/internal/service/user"
 
@@ -36,6 +38,7 @@ type serviceProvider struct {
 	swaggerConfig       config.SwaggerConfig
 	kafkaProducerConfig config.KafkaProducerConfig
 	authConfig          config.AuthConfig
+	accessConfig        config.AccessConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
@@ -51,6 +54,9 @@ type serviceProvider struct {
 	authRepository repository.AuthRepository
 	authService    service.AuthService
 	authImpl       *authApi.API
+
+	accessService service.AccessService
+	accessImpl    *accessApi.API
 }
 
 // NewServiceProvider возвращает новый объект API слоя
@@ -140,6 +146,20 @@ func (s *serviceProvider) AuthConfig() config.AuthConfig {
 	}
 
 	return s.authConfig
+}
+
+// AccessConfig инициализирует конфиг access конфига
+func (s *serviceProvider) AccessConfig() config.AccessConfig {
+	if s.accessConfig == nil {
+		cfg, err := config.NewAccessConfig()
+		if err != nil {
+			log.Fatalf("failed to get access service")
+		}
+
+		s.accessConfig = cfg
+	}
+
+	return s.accessConfig
 }
 
 // KafkaProducerConfig ининициализирует конфиг продюсера kafka
@@ -283,4 +303,27 @@ func (s *serviceProvider) AuthAPI(ctx context.Context) *authApi.API {
 	}
 
 	return s.authImpl
+}
+
+// AccessService иницилизирует сервисный слой access
+func (s *serviceProvider) AccessService(ctx context.Context) service.AccessService {
+	if s.accessService == nil {
+		uMap, err := s.AccessConfig().UserAccessesMap()
+		if err != nil {
+			log.Fatalf("failed to get user access map: %v", err)
+		}
+
+		s.accessService = access.NewService(uMap, s.AuthConfig())
+	}
+
+	return s.accessService
+}
+
+// AccessAPI инициализирует api слой access
+func (s *serviceProvider) AccessAPI(ctx context.Context) *accessApi.API {
+	if s.accessImpl == nil {
+		s.accessImpl = accessApi.NewAPI(s.AccessService(ctx))
+	}
+
+	return s.accessImpl
 }

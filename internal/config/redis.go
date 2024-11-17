@@ -28,7 +28,7 @@ type redisConfig struct {
 }
 
 // NewRedisConfig returns new redis config
-func NewRedisConfig() (*redisConfig, error) {
+func NewRedisConfig() (RedisConfig, error) {
 	host := os.Getenv(redisHostEnvName)
 	if len(host) == 0 {
 		return nil, errors.New("redis host not found")

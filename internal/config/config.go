@@ -49,6 +49,11 @@ type AuthConfig interface {
 	AccessTokenExp() time.Duration
 }
 
+// AccessConfig интерфейс конфига access сервиса
+type AccessConfig interface {
+	UserAccessesMap() (map[string]struct{}, error)
+}
+
 // Load читает .env файл по указанному пути
 // и загружает переменные в проект
 func Load(path string) error {

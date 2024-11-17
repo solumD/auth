@@ -11,6 +11,7 @@ import (
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/interceptor"
+	descAccess "github.com/solumD/auth/pkg/access_v1"
 	descAuth "github.com/solumD/auth/pkg/auth_v1"
 	descUser "github.com/solumD/auth/pkg/user_v1"
 	_ "github.com/solumD/auth/statik" //
@@ -143,7 +144,7 @@ func (a *App) initGRPCServer(ctx context.Context) {
 
 	descUser.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserAPI(ctx))
 	descAuth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthAPI(ctx))
-
+	descAccess.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessAPI(ctx))
 }
 
 func (a *App) initHTTPServer(ctx context.Context) error {

@@ -9,8 +9,8 @@ import (
 )
 
 // Login валидирует данные пользователя, и если все ок, возвращает refresh token
-func (s *srv) Login(ctx context.Context, username string, password string) (string, error) {
-	err := validation.ValidateName(username)
+func (s *srv) Login(ctx context.Context, name string, password string) (string, error) {
+	err := validation.ValidateName(name)
 	if err != nil {
 		return "", err
 	}
@@ -20,7 +20,7 @@ func (s *srv) Login(ctx context.Context, username string, password string) (stri
 		return "", err
 	}
 
-	userInfo, err := s.authRepository.GetUser(ctx, username)
+	userInfo, err := s.authRepository.GetUser(ctx, name)
 	if err != nil {
 		return "", err
 	}

@@ -51,7 +51,7 @@ func (r *repo) GetUser(ctx context.Context, name string) (*model.UserInfo, error
 	return userInfo, nil
 }
 
-// isExistById проверяет, существует ли в БД пользователь с указанным username
+// isExistById проверяет, существует ли в БД пользователь с указанным name
 func (r *repo) isExistByName(ctx context.Context, name string) (bool, error) {
 	query, args, err := sq.Select("1").
 		From(tableName).
@@ -78,7 +78,7 @@ func (r *repo) isExistByName(ctx context.Context, name string) (bool, error) {
 
 		return false, err
 	}
-	// #nosec G101
+
 	return true, nil
 }
 
