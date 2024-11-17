@@ -201,9 +201,6 @@
         },
         "passwordConfirm": {
           "type": "string"
-        },
-        "role": {
-          "$ref": "#/definitions/user_v1Role"
         }
       }
     },

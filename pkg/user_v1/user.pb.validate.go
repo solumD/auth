@@ -92,8 +92,6 @@ func (m *CreateUserRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Role
-
 	if len(errors) > 0 {
 		return CreateUserRequestMultiError(errors)
 	}

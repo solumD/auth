@@ -16,6 +16,7 @@ func (i *API) CreateUser(ctx context.Context, req *desc.CreateUserRequest) (*des
 		return nil, errors.ErrDescUserIsNil
 	}
 
+	
 	userID, err := i.userService.CreateUser(ctx, convertedReq)
 	if err != nil {
 		return nil, err

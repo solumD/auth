@@ -3,7 +3,6 @@ package access
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/solumD/auth/internal/utils/jwt"
@@ -40,14 +39,11 @@ func (s *srv) Check(ctx context.Context, endpointAddress string) (*emptypb.Empty
 		return nil, fmt.Errorf("access token is invalid")
 	}
 
-	log.Println(claims.Role)
 	// админ имеет доступ ко всем эндпоинтам
 	if claims.Role == 2 {
 		return &emptypb.Empty{}, nil
 	}
 
-	log.Println(endpointAddress)
-	log.Println(s.userAccesses)
 	// смотрим, есть ли доступ у пользователя
 	_, ok = s.userAccesses[endpointAddress]
 	if !ok {

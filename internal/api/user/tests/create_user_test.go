@@ -35,7 +35,7 @@ func TestCreateUser(t *testing.T) {
 		email           = gofakeit.Email()
 		password        = gofakeit.Animal()
 		passwordConfirm = password
-		role            = desc.Role(gofakeit.RandomInt([]int{0, 1, 2}))
+		role            = 1
 
 		serviceErr = fmt.Errorf("service error")
 
@@ -44,7 +44,6 @@ func TestCreateUser(t *testing.T) {
 			Email:           email,
 			Password:        password,
 			PasswordConfirm: passwordConfirm,
-			Role:            role,
 		}
 
 		info = &model.User{

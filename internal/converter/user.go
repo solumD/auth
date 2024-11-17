@@ -41,7 +41,7 @@ func ToUserFromDescUser(user *desc.CreateUserRequest) *model.User {
 		Email:           user.Email,
 		Password:        user.Password,
 		PasswordConfirm: user.PasswordConfirm,
-		Role:            int64(user.Role),
+		Role:            1, // по умолчанию роль 1 (USER)
 	}
 }
 

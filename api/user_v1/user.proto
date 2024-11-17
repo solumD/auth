@@ -71,7 +71,6 @@ message CreateUserRequest {
     string email = 2;
     string password = 3 [(validate.rules).string.pattern = "^[a-zA-Z0-9]+$"];
     string password_confirm = 4 [(validate.rules).string.pattern = "^[a-zA-Z0-9]+$"];
-    Role role = 5;
 }
 
 message CreateUserResponse {
