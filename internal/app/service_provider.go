@@ -306,7 +306,7 @@ func (s *serviceProvider) AuthAPI(ctx context.Context) *authApi.API {
 }
 
 // AccessService иницилизирует сервисный слой access
-func (s *serviceProvider) AccessService(ctx context.Context) service.AccessService {
+func (s *serviceProvider) AccessService(_ context.Context) service.AccessService {
 	if s.accessService == nil {
 		uMap, err := s.AccessConfig().UserAccessesMap()
 		if err != nil {
