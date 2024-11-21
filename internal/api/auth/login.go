@@ -9,7 +9,12 @@ import (
 
 // Login отправляет запрос в сервисный слой на авторизацию
 func (a *API) Login(ctx context.Context, req *desc.LoginRequest) (*desc.LoginResponse, error) {
-	token, err := a.authService.Login(ctx, req.GetUsername(), req.GetPassword())
+	refreshToken, err := a.authService.Login(ctx, req.GetUsername(), req.GetPassword())
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := a.authService.GetAccessToken(ctx, refreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -17,6 +22,7 @@ func (a *API) Login(ctx context.Context, req *desc.LoginRequest) (*desc.LoginRes
 	log.Printf("succesful login for %s\n", req.GetUsername())
 
 	return &desc.LoginResponse{
-		RefreshToken: token,
+		RefreshToken: refreshToken,
+		AccessToken:  accessToken,
 	}, nil
 }
