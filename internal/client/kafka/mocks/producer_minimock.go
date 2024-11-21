@@ -11,6 +11,7 @@ import (
 
 	"github.com/IBM/sarama"
 	"github.com/gojuno/minimock/v3"
+	mm_kafka "github.com/solumD/auth/internal/client/kafka"
 )
 
 // ProducerMock implements mm_kafka.Producer
@@ -25,7 +26,7 @@ type ProducerMock struct {
 	beforeCloseCounter uint64
 	CloseMock          mProducerMockClose
 
-	funcSendMessage          func(msg *sarama.ProducerMessage) (i1 int32, i2 int64, err error)
+	funcSendMessage          func(msg *sarama.ProducerMessage) (rp1 *mm_kafka.Response)
 	funcSendMessageOrigin    string
 	inspectFuncSendMessage   func(msg *sarama.ProducerMessage)
 	afterSendMessageCounter  uint64
@@ -273,9 +274,7 @@ type ProducerMockSendMessageParamPtrs struct {
 
 // ProducerMockSendMessageResults contains results of the Producer.SendMessage
 type ProducerMockSendMessageResults struct {
-	i1  int32
-	i2  int64
-	err error
+	rp1 *mm_kafka.Response
 }
 
 // ProducerMockSendMessageOrigins contains origins of expectations of the Producer.SendMessage
@@ -354,7 +353,7 @@ func (mmSendMessage *mProducerMockSendMessage) Inspect(f func(msg *sarama.Produc
 }
 
 // Return sets up results that will be returned by Producer.SendMessage
-func (mmSendMessage *mProducerMockSendMessage) Return(i1 int32, i2 int64, err error) *ProducerMock {
+func (mmSendMessage *mProducerMockSendMessage) Return(rp1 *mm_kafka.Response) *ProducerMock {
 	if mmSendMessage.mock.funcSendMessage != nil {
 		mmSendMessage.mock.t.Fatalf("ProducerMock.SendMessage mock is already set by Set")
 	}
@@ -362,13 +361,13 @@ func (mmSendMessage *mProducerMockSendMessage) Return(i1 int32, i2 int64, err er
 	if mmSendMessage.defaultExpectation == nil {
 		mmSendMessage.defaultExpectation = &ProducerMockSendMessageExpectation{mock: mmSendMessage.mock}
 	}
-	mmSendMessage.defaultExpectation.results = &ProducerMockSendMessageResults{i1, i2, err}
+	mmSendMessage.defaultExpectation.results = &ProducerMockSendMessageResults{rp1}
 	mmSendMessage.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
 	return mmSendMessage.mock
 }
 
 // Set uses given function f to mock the Producer.SendMessage method
-func (mmSendMessage *mProducerMockSendMessage) Set(f func(msg *sarama.ProducerMessage) (i1 int32, i2 int64, err error)) *ProducerMock {
+func (mmSendMessage *mProducerMockSendMessage) Set(f func(msg *sarama.ProducerMessage) (rp1 *mm_kafka.Response)) *ProducerMock {
 	if mmSendMessage.defaultExpectation != nil {
 		mmSendMessage.mock.t.Fatalf("Default expectation is already set for the Producer.SendMessage method")
 	}
@@ -399,8 +398,8 @@ func (mmSendMessage *mProducerMockSendMessage) When(msg *sarama.ProducerMessage)
 }
 
 // Then sets up Producer.SendMessage return parameters for the expectation previously defined by the When method
-func (e *ProducerMockSendMessageExpectation) Then(i1 int32, i2 int64, err error) *ProducerMock {
-	e.results = &ProducerMockSendMessageResults{i1, i2, err}
+func (e *ProducerMockSendMessageExpectation) Then(rp1 *mm_kafka.Response) *ProducerMock {
+	e.results = &ProducerMockSendMessageResults{rp1}
 	return e.mock
 }
 
@@ -426,7 +425,7 @@ func (mmSendMessage *mProducerMockSendMessage) invocationsDone() bool {
 }
 
 // SendMessage implements mm_kafka.Producer
-func (mmSendMessage *ProducerMock) SendMessage(msg *sarama.ProducerMessage) (i1 int32, i2 int64, err error) {
+func (mmSendMessage *ProducerMock) SendMessage(msg *sarama.ProducerMessage) (rp1 *mm_kafka.Response) {
 	mm_atomic.AddUint64(&mmSendMessage.beforeSendMessageCounter, 1)
 	defer mm_atomic.AddUint64(&mmSendMessage.afterSendMessageCounter, 1)
 
@@ -446,7 +445,7 @@ func (mmSendMessage *ProducerMock) SendMessage(msg *sarama.ProducerMessage) (i1 
 	for _, e := range mmSendMessage.SendMessageMock.expectations {
 		if minimock.Equal(*e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.i1, e.results.i2, e.results.err
+			return e.results.rp1
 		}
 	}
 
@@ -473,7 +472,7 @@ func (mmSendMessage *ProducerMock) SendMessage(msg *sarama.ProducerMessage) (i1 
 		if mm_results == nil {
 			mmSendMessage.t.Fatal("No results are set for the ProducerMock.SendMessage")
 		}
-		return (*mm_results).i1, (*mm_results).i2, (*mm_results).err
+		return (*mm_results).rp1
 	}
 	if mmSendMessage.funcSendMessage != nil {
 		return mmSendMessage.funcSendMessage(msg)

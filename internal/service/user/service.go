@@ -11,41 +11,41 @@ import (
 // Структура сервисного слоя с объектами репо слоя
 // и транзакционного менеджера
 type srv struct {
-	authRepository repository.AuthRepository
+	userRepository repository.UserRepository
 	txManager      db.TxManager
 	authCache      cache.AuthCache
-	kafkaProdcuer  kafka.Producer
+	kafkaProducer  kafka.Producer
 }
 
 // NewService возвращает объект сервисного слоя
 func NewService(
-	authRepository repository.AuthRepository,
+	userRepository repository.UserRepository,
 	txManager db.TxManager,
 	authCache cache.AuthCache,
 	kafkaProducer kafka.Producer,
-) service.AuthService {
+) service.UserService {
 	return &srv{
-		authRepository: authRepository,
+		userRepository: userRepository,
 		txManager:      txManager,
 		authCache:      authCache,
-		kafkaProdcuer:  kafkaProducer,
+		kafkaProducer:  kafkaProducer,
 	}
 }
 
 // NewMockService возвращает объект мока сервисного слоя
-func NewMockService(deps ...interface{}) service.AuthService {
+func NewMockService(deps ...interface{}) service.UserService {
 	serv := srv{}
 
 	for _, v := range deps {
 		switch s := v.(type) {
-		case repository.AuthRepository:
-			serv.authRepository = s
+		case repository.UserRepository:
+			serv.userRepository = s
 		case cache.AuthCache:
 			serv.authCache = s
 		case db.TxManager:
 			serv.txManager = s
 		case kafka.Producer:
-			serv.kafkaProdcuer = s
+			serv.kafkaProducer = s
 		}
 	}
 

@@ -2,7 +2,7 @@ package converter
 
 import (
 	"github.com/solumD/auth/internal/model"
-	desc "github.com/solumD/auth/pkg/auth_v1"
+	desc "github.com/solumD/auth/pkg/user_v1"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -41,7 +41,7 @@ func ToUserFromDescUser(user *desc.CreateUserRequest) *model.User {
 		Email:           user.Email,
 		Password:        user.Password,
 		PasswordConfirm: user.PasswordConfirm,
-		Role:            int64(user.Role),
+		Role:            1, // по умолчанию роль 1 (USER)
 	}
 }
 

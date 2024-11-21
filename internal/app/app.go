@@ -11,18 +11,26 @@ import (
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/interceptor"
-	desc "github.com/solumD/auth/pkg/auth_v1"
+	descAccess "github.com/solumD/auth/pkg/access_v1"
+	descAuth "github.com/solumD/auth/pkg/auth_v1"
+	descUser "github.com/solumD/auth/pkg/user_v1"
 	_ "github.com/solumD/auth/statik" //
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
 const configPath = ".env"
+
+var (
+	corsAllowedMethods = []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"}
+	corsAllowedHeaders = []string{"Accept", "Content-Type", "Content-Length", "Authorization"}
+)
 
 // App структура приложения
 type App struct {
@@ -122,15 +130,21 @@ func (a *App) initServiceProvider() {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) {
+	creds, err := credentials.NewServerTLSFromFile("./tls/service/service.pem", "./tls/service/service.key")
+	if err != nil {
+		log.Fatalf("failed to load TLS keys: %v", err)
+	}
+
 	a.grpcServer = grpc.NewServer(
-		grpc.Creds(insecure.NewCredentials()),
+		grpc.Creds(creds),
 		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
 	)
 
 	reflection.Register(a.grpcServer)
 
-	desc.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthAPI(ctx))
-
+	descUser.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserAPI(ctx))
+	descAuth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthAPI(ctx))
+	descAccess.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessAPI(ctx))
 }
 
 func (a *App) initHTTPServer(ctx context.Context) error {
@@ -140,15 +154,15 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	err := desc.RegisterAuthV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
+	err := descUser.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
 	if err != nil {
 		return err
 	}
 
 	corsMiddleware := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Content-Type", "Content-Length", "Authorization"},
+		AllowedMethods:   corsAllowedMethods,
+		AllowedHeaders:   corsAllowedHeaders,
 		AllowCredentials: true,
 	})
 

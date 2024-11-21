@@ -4,7 +4,9 @@ import (
 	"context"
 	"log"
 
-	authApi "github.com/solumD/auth/internal/api/user"
+	accessApi "github.com/solumD/auth/internal/api/access"
+	authApi "github.com/solumD/auth/internal/api/auth"
+	userApi "github.com/solumD/auth/internal/api/user"
 	authCache "github.com/solumD/auth/internal/cache"
 	redisCache "github.com/solumD/auth/internal/cache/redis"
 	"github.com/solumD/auth/internal/client/cache"
@@ -17,9 +19,12 @@ import (
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/repository"
-	authRepoPG "github.com/solumD/auth/internal/repository/user"
+	authRepo "github.com/solumD/auth/internal/repository/auth"
+	userRepo "github.com/solumD/auth/internal/repository/user"
 	"github.com/solumD/auth/internal/service"
-	authSrv "github.com/solumD/auth/internal/service/user"
+	"github.com/solumD/auth/internal/service/access"
+	authSrv "github.com/solumD/auth/internal/service/auth"
+	userSrv "github.com/solumD/auth/internal/service/user"
 
 	redigo "github.com/gomodule/redigo/redis"
 )
@@ -32,17 +37,26 @@ type serviceProvider struct {
 	httpConfig          config.HTTPConfig
 	swaggerConfig       config.SwaggerConfig
 	kafkaProducerConfig config.KafkaProducerConfig
+	authConfig          config.AuthConfig
+	accessConfig        config.AccessConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
 	cacheClient cache.Client
 
+	kafkaProducer kafka.Producer
+
 	authCache      authCache.AuthCache
+	userRepository repository.UserRepository
+	userService    service.UserService
+	userImpl       *userApi.API
+
 	authRepository repository.AuthRepository
 	authService    service.AuthService
-	authImpl       *authApi.AuthAPI
+	authImpl       *authApi.API
 
-	kafkaProducer kafka.Producer
+	accessService service.AccessService
+	accessImpl    *accessApi.API
 }
 
 // NewServiceProvider возвращает новый объект API слоя
@@ -120,7 +134,35 @@ func (s *serviceProvider) SwaggerConfig() config.HTTPConfig {
 	return s.swaggerConfig
 }
 
-// KafkaProducerConfigининициализирует конфиг продюсера kafka
+// AuthConfig инициализирует конфиг auth сервиса
+func (s *serviceProvider) AuthConfig() config.AuthConfig {
+	if s.authConfig == nil {
+		cfg, err := config.NewAuthConfig()
+		if err != nil {
+			log.Fatalf("failed to get auth config")
+		}
+
+		s.authConfig = cfg
+	}
+
+	return s.authConfig
+}
+
+// AccessConfig инициализирует конфиг access конфига
+func (s *serviceProvider) AccessConfig() config.AccessConfig {
+	if s.accessConfig == nil {
+		cfg, err := config.NewAccessConfig()
+		if err != nil {
+			log.Fatalf("failed to get access service")
+		}
+
+		s.accessConfig = cfg
+	}
+
+	return s.accessConfig
+}
+
+// KafkaProducerConfig ининициализирует конфиг продюсера kafka
 func (s *serviceProvider) KafkaProducerConfig() config.KafkaProducerConfig {
 	if s.kafkaProducerConfig == nil {
 		cfg, err := config.NewKafkaProducerConfig()
@@ -188,7 +230,7 @@ func (s *serviceProvider) CacheClient(ctx context.Context) cache.Client {
 // KafkaProducer инициализрует продюсер kafka
 func (s *serviceProvider) KafkaProducer(_ context.Context) kafka.Producer {
 	if s.kafkaProducer == nil {
-		p, err := producer.New(s.KafkaProducerConfig().Brokers(), s.kafkaProducerConfig.Config())
+		p, err := producer.New(s.KafkaProducerConfig().Brokers(), s.KafkaProducerConfig().Config())
 		if err != nil {
 			log.Fatalf("failed to create kafka producer: %v", err)
 		}
@@ -209,29 +251,79 @@ func (s *serviceProvider) AuthCache(ctx context.Context) authCache.AuthCache {
 	return s.authCache
 }
 
-// AuthRepository инициализирует репо слой
+// UserRepository инициализирует репо слой user
+func (s *serviceProvider) UserReposistory(ctx context.Context) repository.UserRepository {
+	if s.userRepository == nil {
+		s.userRepository = userRepo.NewRepository(s.DBClient(ctx))
+	}
+
+	return s.userRepository
+}
+
+// UserService иницилизирует сервисный слой user
+func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
+	if s.userService == nil {
+		s.userService = userSrv.NewService(s.UserReposistory(ctx), s.TxManager(ctx), s.AuthCache(ctx), s.KafkaProducer(ctx))
+	}
+
+	return s.userService
+}
+
+// UserAPI инициализирует api слой user
+func (s *serviceProvider) UserAPI(ctx context.Context) *userApi.API {
+	if s.userImpl == nil {
+		s.userImpl = userApi.NewAPI(s.UserService(ctx))
+	}
+
+	return s.userImpl
+}
+
+// AuthRepository инициализирует репо слой auth
 func (s *serviceProvider) AuthReposistory(ctx context.Context) repository.AuthRepository {
 	if s.authRepository == nil {
-		s.authRepository = authRepoPG.NewRepository(s.DBClient(ctx))
+		s.authRepository = authRepo.NewRepository(s.DBClient(ctx))
 	}
 
 	return s.authRepository
 }
 
-// AuthService иницилизирует сервисный слой
+// AuthService иницилизирует сервисный слой auth
 func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
-		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.TxManager(ctx), s.AuthCache(ctx), s.KafkaProducer(ctx))
+		s.authService = authSrv.NewService(s.AuthReposistory(ctx), s.AuthConfig())
 	}
 
 	return s.authService
 }
 
-// AuthAPI инициализирует api слой
-func (s *serviceProvider) AuthAPI(ctx context.Context) *authApi.AuthAPI {
+// AuthAPI инициализирует api слой auth
+func (s *serviceProvider) AuthAPI(ctx context.Context) *authApi.API {
 	if s.authImpl == nil {
-		s.authImpl = authApi.NewAuthAPI(s.AuthService(ctx))
+		s.authImpl = authApi.NewAPI(s.AuthService(ctx))
 	}
 
 	return s.authImpl
+}
+
+// AccessService иницилизирует сервисный слой access
+func (s *serviceProvider) AccessService(_ context.Context) service.AccessService {
+	if s.accessService == nil {
+		uMap, err := s.AccessConfig().UserAccessesMap()
+		if err != nil {
+			log.Fatalf("failed to get user access map: %v", err)
+		}
+
+		s.accessService = access.NewService(uMap, s.AuthConfig())
+	}
+
+	return s.accessService
+}
+
+// AccessAPI инициализирует api слой access
+func (s *serviceProvider) AccessAPI(ctx context.Context) *accessApi.API {
+	if s.accessImpl == nil {
+		s.accessImpl = accessApi.NewAPI(s.AccessService(ctx))
+	}
+
+	return s.accessImpl
 }

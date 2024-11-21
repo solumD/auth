@@ -2,102 +2,36 @@ syntax = "proto3";
 
 package auth_v1;
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
-import "google/protobuf/wrappers.proto";
-import "validate/validate.proto";
-import "google/api/annotations.proto"; 
-import "protoc-gen-openapiv2/options/annotations.proto";
-
 option go_package = "github.com/solumD/auth/pkg/auth_v1;auth_v1";
 
-option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-    info: {
-        title: "Auth API"
-        version: "1.0.0"
-        contact: {
-            name: "Dmitry Kononov"
-            email: "dkononov-work@yandex.ru"
-        };
-    };
-
-    host: "localhost:8080",
-    schemes: HTTP,
-    schemes: HTTPS,
-    consumes: "application/json",
-    produces: "application/json",
-};
-
 service AuthV1 {
-    // Создает нового пользователя
-    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
-        option (google.api.http) = {
-            post: "/auth/v1/user/create"
-            body: "*"
-        };
-    }
-
-    // Получает пользователя по id
-    rpc GetUser(GetUserRequest) returns (GetUserResponse) {
-        option (google.api.http) = {
-            get: "/auth/v1/user/get"
-        };
-    }
-
-    // Обновляет данные пользователя по id
-    rpc UpdateUser(UpdateUserRequest) returns (google.protobuf.Empty) {
-        option (google.api.http) = {
-            patch: "/auth/v1/user/update"
-            body: "*"
-        };
-    }
-
-    // Удаляет пользователя по id
-    rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
-        option (google.api.http) = {
-            delete: "/auth/v1/user/delete"
-        };
-    }
+    rpc Login(LoginRequest) returns (LoginResponse);
+    rpc GetRefreshToken(GetRefreshTokenRequest) returns (GetRefreshTokenResponse);
+    rpc GetAccessToken(GetAccessTokenRequest) returns (GetAccessTokenResponse);
 }
 
-enum Role {
-    UNKNOWN = 0;
-    USER = 1;
-    ADMIN = 2;
+message LoginRequest {
+    string username = 1;
+    string password = 2;
 }
 
-message CreateUserRequest {
-    string name = 1 [(validate.rules).string.pattern = "^[a-zA-Z0-9]+$"];
-    string email = 2;
-    string password = 3 [(validate.rules).string.pattern = "^[a-zA-Z0-9]+$"];
-    string password_confirm = 4 [(validate.rules).string.pattern = "^[a-zA-Z0-9]+$"];
-    Role role = 5;
+message LoginResponse {
+    string refresh_token = 1;
+    string access_token = 2;
 }
 
-message CreateUserResponse {
-    int64 id = 1;
+message GetRefreshTokenRequest {
+    string old_refresh_token = 1;
 }
 
-message GetUserRequest {
-    int64 id = 1;
+message GetRefreshTokenResponse {
+    string refresh_token = 1;
 }
 
-message GetUserResponse {
-    int64 id = 1;
-    string name = 2;
-    string email = 3;
-    Role role = 4;
-    google.protobuf.Timestamp created_at = 5;
-    google.protobuf.Timestamp updated_at = 6;
+message GetAccessTokenRequest {
+    string refresh_token = 1;
 }
 
-message UpdateUserRequest {
-    int64 id = 1;
-    google.protobuf.StringValue name = 2 [(validate.rules).string.pattern = "^[a-zA-Z0-9]+$"];
-    google.protobuf.StringValue email = 3 [(validate.rules).string.pattern = "^[a-zA-Z0-9]+$"];
-    Role role = 4;
-}
-
-message DeleteUserRequest {
-    int64 id = 1;
+message GetAccessTokenResponse {
+    string access_token = 1; 
 }

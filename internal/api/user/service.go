@@ -2,19 +2,20 @@ package user
 
 import (
 	"github.com/solumD/auth/internal/service"
-	desc "github.com/solumD/auth/pkg/auth_v1"
+
+	desc "github.com/solumD/auth/pkg/user_v1"
 )
 
-// AuthAPI сруктура с заглушками gRPC-методов (при их отсутствии) и
+// API user структура с заглушками gRPC-методов (при их отсутствии) и
 // объект сервисного слоя (его интерфейса)
-type AuthAPI struct {
-	desc.UnimplementedAuthV1Server
-	authService service.AuthService
+type API struct {
+	desc.UnimplementedUserV1Server
+	userService service.UserService
 }
 
-// NewAuthAPI возвращает новый объект имплементации API-слоя
-func NewAuthAPI(authService service.AuthService) *AuthAPI {
-	return &AuthAPI{
-		authService: authService,
+// NewAPI возвращает новый объект имплементации API-слоя
+func NewAPI(userService service.UserService) *API {
+	return &API{
+		userService: userService,
 	}
 }

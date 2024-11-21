@@ -9,7 +9,9 @@ import (
 )
 
 const (
-	kafkaBrokersEnvName = "KAFKA_BROKERS"
+	kafkaBrokersEnvName     = "KAFKA_BROKERS"
+	producerRetryMax        = 5
+	producerReturnSuccesses = true
 )
 
 type kafkaProducerConfig struct {
@@ -32,6 +34,10 @@ func NewKafkaProducerConfig() (KafkaProducerConfig, error) {
 
 // Brokers returns list of broker's addresses
 func (cfg *kafkaProducerConfig) Brokers() []string {
+	if cfg.brokers == nil {
+		return []string{}
+	}
+
 	return cfg.brokers
 }
 
@@ -39,8 +45,8 @@ func (cfg *kafkaProducerConfig) Brokers() []string {
 func (cfg *kafkaProducerConfig) Config() *sarama.Config {
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
-	config.Producer.Retry.Max = 5
-	config.Producer.Return.Successes = true
+	config.Producer.Retry.Max = producerRetryMax
+	config.Producer.Return.Successes = producerReturnSuccesses
 
 	return config
 }

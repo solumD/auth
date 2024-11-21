@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/solumD/auth/internal/model"
-	"github.com/solumD/auth/internal/validation"
+	"github.com/solumD/auth/internal/utils/validation"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -26,7 +26,7 @@ func (s *srv) UpdateUser(ctx context.Context, user *model.UserUpdate) (*emptypb.
 		}
 	}
 
-	_, err := s.authRepository.UpdateUser(ctx, user)
+	_, err := s.userRepository.UpdateUser(ctx, user)
 	if err != nil {
 		return nil, err
 	}

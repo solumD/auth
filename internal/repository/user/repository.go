@@ -10,6 +10,7 @@ import (
 	"github.com/solumD/auth/internal/repository"
 	"github.com/solumD/auth/internal/repository/user/converter"
 	modelRepo "github.com/solumD/auth/internal/repository/user/model"
+	"github.com/solumD/auth/internal/utils/hash"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
@@ -34,7 +35,7 @@ type repo struct {
 }
 
 // NewRepository возвращает новый объект репо слоя
-func NewRepository(db db.Client) repository.AuthRepository {
+func NewRepository(db db.Client) repository.UserRepository {
 	return &repo{
 		db: db,
 	}
@@ -58,10 +59,15 @@ func (r *repo) CreateUser(ctx context.Context, user *model.User) (int64, error) 
 		return 0, fmt.Errorf("user with email %s already exists", user.Email)
 	}
 
+	passHash, err := hash.EncryptPassword(user.Password)
+	if err != nil {
+		return 0, err
+	}
+
 	query, args, err := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, emailColumn, passwordColumn, roleColumn).
-		Values(user.Name, user.Email, user.Password, user.Role).
+		Values(user.Name, user.Email, passHash, user.Role).
 		Suffix("RETURNING id").ToSql()
 
 	if err != nil {

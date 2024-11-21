@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/solumD/auth/internal/model"
-	"github.com/solumD/auth/internal/validation"
+	"github.com/solumD/auth/internal/utils/validation"
 
 	"github.com/IBM/sarama"
 )
@@ -41,12 +41,12 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 
 	err = s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
-		userID, errTx = s.authRepository.CreateUser(ctx, user)
+		userID, errTx = s.userRepository.CreateUser(ctx, user)
 		if errTx != nil {
 			return errTx
 		}
 
-		savedUser, errTx := s.authRepository.GetUser(ctx, userID)
+		savedUser, errTx := s.userRepository.GetUser(ctx, userID)
 		if errTx != nil {
 			return errTx
 		}
@@ -74,12 +74,12 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 		Value: sarama.StringEncoder(data),
 	}
 
-	p, o, err := s.kafkaProdcuer.SendMessage(msg)
-	if err != nil {
+	res := s.kafkaProducer.SendMessage(msg)
+	if res.Err != nil {
 		log.Printf("failed to send message in Kafka: %v\n", err)
 	}
 
-	log.Printf("message sent to partition %d with offset %d\n", p, o)
+	log.Printf("message sent to partition %d with offset %d\n", res.Partition, res.Offset)
 
 	return userID, nil
 }
