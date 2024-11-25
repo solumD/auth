@@ -12,6 +12,11 @@ type GRPCConfig interface {
 	Address() string
 }
 
+// LoggerConfig интерфейс конфига логгера
+type LoggerConfig interface {
+	Level() string
+}
+
 // PGConfig интерфейс postgres конфига
 type PGConfig interface {
 	DSN() string

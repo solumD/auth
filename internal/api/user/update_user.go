@@ -2,12 +2,13 @@ package user
 
 import (
 	"context"
-	"log"
 
 	"github.com/solumD/auth/internal/api/user/errors"
 	"github.com/solumD/auth/internal/converter"
+	"github.com/solumD/auth/internal/logger"
 	desc "github.com/solumD/auth/pkg/user_v1"
 
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -23,7 +24,7 @@ func (i *API) UpdateUser(ctx context.Context, req *desc.UpdateUserRequest) (*emp
 		return nil, err
 	}
 
-	log.Printf("updated user with id: %d", req.GetId())
+	logger.Info("updated user", zap.Int64("userID", req.GetId()))
 
 	return &emptypb.Empty{}, nil
 }

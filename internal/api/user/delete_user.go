@@ -2,10 +2,11 @@ package user
 
 import (
 	"context"
-	"log"
 
+	"github.com/solumD/auth/internal/logger"
 	desc "github.com/solumD/auth/pkg/user_v1"
 
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -16,7 +17,7 @@ func (i *API) DeleteUser(ctx context.Context, req *desc.DeleteUserRequest) (*emp
 		return nil, err
 	}
 
-	log.Printf("deleted user with id: %d", req.GetId())
+	logger.Info("deleted user", zap.Int64("userID", req.GetId()))
 
 	return &emptypb.Empty{}, nil
 }

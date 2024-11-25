@@ -2,9 +2,11 @@ package auth
 
 import (
 	"context"
-	"log"
 
+	"github.com/solumD/auth/internal/logger"
 	desc "github.com/solumD/auth/pkg/auth_v1"
+
+	"go.uber.org/zap"
 )
 
 // Login отправляет запрос в сервисный слой на авторизацию
@@ -19,7 +21,7 @@ func (a *API) Login(ctx context.Context, req *desc.LoginRequest) (*desc.LoginRes
 		return nil, err
 	}
 
-	log.Printf("succesful login for %s\n", req.GetUsername())
+	logger.Info("succesful login", zap.String("username", req.GetUsername()))
 
 	return &desc.LoginResponse{
 		RefreshToken: refreshToken,

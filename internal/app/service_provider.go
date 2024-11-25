@@ -39,6 +39,7 @@ type serviceProvider struct {
 	kafkaProducerConfig config.KafkaProducerConfig
 	authConfig          config.AuthConfig
 	accessConfig        config.AccessConfig
+	loggerConfig        config.LoggerConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
@@ -90,6 +91,20 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	}
 
 	return s.grpcConfig
+}
+
+// LoggerConfig инициализирует конфиг логгера
+func (s *serviceProvider) LoggerConfig() config.LoggerConfig {
+	if s.loggerConfig == nil {
+		cfg, err := config.NewLoggerConfig()
+		if err != nil {
+			log.Fatalf("failed to get logger config:%v", err)
+		}
+
+		s.loggerConfig = cfg
+	}
+
+	return s.loggerConfig
 }
 
 // RedisConfig инициализирует конфиг redis

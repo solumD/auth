@@ -2,18 +2,20 @@ package user
 
 import (
 	"context"
-	"log"
 
+	"github.com/solumD/auth/internal/logger"
 	"github.com/solumD/auth/internal/model"
+
+	"go.uber.org/zap"
 )
 
 // GetUser отправляет запрос в кэш, а затем в репо слой на получение данных пользователя
 func (s *srv) GetUser(ctx context.Context, userID int64) (*model.User, error) {
 	user, err := s.authCache.GetUser(ctx, userID)
 	if err != nil {
-		log.Printf("failed to get user %d from cache", userID)
+		logger.Error("failed to get user from cache", zap.Int64("userID", userID))
 	} else {
-		log.Printf("got user %d from cache", userID)
+		logger.Info("got user from cache", zap.Int64("userID", userID))
 		return user, nil
 	}
 
@@ -24,9 +26,9 @@ func (s *srv) GetUser(ctx context.Context, userID int64) (*model.User, error) {
 
 	err = s.authCache.CreateUser(ctx, user)
 	if err != nil {
-		log.Printf("failed to save user %d in cache", userID)
+		logger.Error("failed to save user in cache", zap.Int64("userID", userID), zap.NamedError("error", err))
 	} else {
-		log.Printf("saved user %d in cache", userID)
+		logger.Info("saved user in cache", zap.Int64("userID", userID))
 	}
 
 	return user, nil

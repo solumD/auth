@@ -2,11 +2,11 @@ package pg
 
 import (
 	"context"
-	"fmt"
-	"log"
 
 	"github.com/solumD/auth/internal/client/db"
 	"github.com/solumD/auth/internal/client/db/prettier"
+	"github.com/solumD/auth/internal/logger"
+	"go.uber.org/zap"
 
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
@@ -114,9 +114,6 @@ func MakeContextTx(ctx context.Context, tx pgx.Tx) context.Context {
 
 func logQuery(ctx context.Context, q db.Query, args ...interface{}) {
 	prettyQuery := prettier.Pretty(q.QueryRaw, prettier.PlaceholderDollar, args...)
-	log.Println(
-		ctx,
-		fmt.Sprintf("sql: %s", q.Name),
-		fmt.Sprintf("query: %s", prettyQuery),
-	)
+	logger.Debug(
+		"", zap.Any("ctx", ctx), zap.String("sql", q.Name), zap.String("query", prettyQuery))
 }

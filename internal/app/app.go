@@ -11,11 +11,13 @@ import (
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/interceptor"
+	"github.com/solumD/auth/internal/logger"
 	descAccess "github.com/solumD/auth/pkg/access_v1"
 	descAuth "github.com/solumD/auth/pkg/auth_v1"
 	descUser "github.com/solumD/auth/pkg/user_v1"
 	_ "github.com/solumD/auth/statik" //
 
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
@@ -135,9 +137,16 @@ func (a *App) initGRPCServer(ctx context.Context) {
 		log.Fatalf("failed to load TLS keys: %v", err)
 	}
 
+	logger.Init(logger.GetCore(logger.GetAtomicLevel(a.serviceProvider.LoggerConfig().Level())))
+
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(creds),
-		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+		grpc.UnaryInterceptor(
+			grpcMiddleware.ChainUnaryServer(
+				interceptor.LogInterceptor,
+				interceptor.ValidateInterceptor,
+			),
+		),
 	)
 
 	reflection.Register(a.grpcServer)
