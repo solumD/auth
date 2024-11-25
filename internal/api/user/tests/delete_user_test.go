@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/solumD/auth/internal/api/user"
+	"github.com/solumD/auth/internal/logger"
 	"github.com/solumD/auth/internal/service"
 	serviceMocks "github.com/solumD/auth/internal/service/mocks"
 	desc "github.com/solumD/auth/pkg/user_v1"
@@ -77,6 +78,8 @@ func TestDeleteUser(t *testing.T) {
 			},
 		},
 	}
+
+	logger.MockInit()
 
 	for _, tt := range tests {
 		tt := tt

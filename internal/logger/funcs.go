@@ -52,3 +52,8 @@ func GetAtomicLevel(logLevel string) zap.AtomicLevel {
 
 	return zap.NewAtomicLevelAt(level)
 }
+
+// MockInit инициализирует логгер для моков
+func MockInit() {
+	globalLogger = zap.NewNop()
+}
