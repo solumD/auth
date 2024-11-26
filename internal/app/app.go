@@ -8,16 +8,18 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/interceptor"
 	"github.com/solumD/auth/internal/logger"
+	"github.com/solumD/auth/internal/metric"
 	descAccess "github.com/solumD/auth/pkg/access_v1"
 	descAuth "github.com/solumD/auth/pkg/auth_v1"
 	descUser "github.com/solumD/auth/pkg/user_v1"
 	_ "github.com/solumD/auth/statik" //
 
-	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcMW "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
@@ -62,7 +64,7 @@ func (a *App) Run() error {
 	}()
 
 	wg := sync.WaitGroup{}
-	wg.Add(3)
+	wg.Add(4)
 
 	go func() {
 		defer wg.Done()
@@ -88,6 +90,15 @@ func (a *App) Run() error {
 		err := a.runSwaggerServer()
 		if err != nil {
 			log.Fatalf("failed to run swagger server: %v", err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		err := a.runPrometheusServer()
+		if err != nil {
+			log.Fatalf("failed to run prometheus server: %v", err)
 		}
 	}()
 
@@ -137,12 +148,14 @@ func (a *App) initGRPCServer(ctx context.Context) {
 		log.Fatalf("failed to load TLS keys: %v", err)
 	}
 
+	metric.Init()
 	logger.Init(logger.GetCore(logger.GetAtomicLevel(a.serviceProvider.LoggerConfig().Level())))
 
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(creds),
 		grpc.UnaryInterceptor(
-			grpcMiddleware.ChainUnaryServer(
+			grpcMW.ChainUnaryServer(
+				interceptor.MetricsInterceptor,
 				interceptor.LogInterceptor,
 				interceptor.ValidateInterceptor,
 			),
@@ -231,6 +244,25 @@ func (a *App) runSwaggerServer() error {
 	log.Printf("Swagger server is running on %s", a.serviceProvider.SwaggerConfig().Address())
 
 	err := a.swaggerServer.ListenAndServe()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *App) runPrometheusServer() error {
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+
+	prometheusServer := &http.Server{
+		Addr:    a.serviceProvider.PrometheusConfig().Address(),
+		Handler: mux,
+	}
+
+	log.Printf("Prometheus server is running on %s", a.serviceProvider.PrometheusConfig().Address())
+
+	err := prometheusServer.ListenAndServe()
 	if err != nil {
 		return err
 	}

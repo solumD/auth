@@ -112,3 +112,28 @@ gen-cert:
 	openssl req -new -key service.key -out service.csr -config certificate.conf
 	openssl x509 -req -in service.csr -CA ca.cert -CAkey ca.key -CAcreateserial \
     		-out service.pem -days 365 -sha256 -extfile certificate.conf -extensions req_ext
+
+
+grpc-load-test:
+	$(LOCAL_BIN)/ghz \
+		--proto api/auth_v1/auth.proto \
+		--import-paths=vendor.protogen 
+		--call auth_v1.AuthV1.Login \
+		--data '{"username": "testuser", "password":"Ab12345678"}' \
+		--rps 100 \
+		--total 3000 \
+		--insecure \
+		--cacert=./tls/service/service.pem \
+		localhost:50051
+
+grpc-error-load-test:
+	$(LOCAL_BIN)/ghz \
+		--proto api/auth_v1/auth.proto \
+		--import-paths=vendor.protogen 
+		--call auth_v1.AuthV1.Login \
+		--data '{"username": "testuser", "password":"Ab12345678"}' \
+		--rps 100 \
+		--total 3000 \
+		--insecure \
+		--cacert=./tls/service/service.pem \
+		localhost:50051

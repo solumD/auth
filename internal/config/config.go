@@ -40,6 +40,11 @@ type SwaggerConfig interface {
 	Address() string
 }
 
+// PrometheusConfig интерфейс конфига prometheus http-сервера
+type PrometheusConfig interface {
+	Address() string
+}
+
 // KafkaProducerConfig интерфейс конфига продюсера kafka
 type KafkaProducerConfig interface {
 	Brokers() []string

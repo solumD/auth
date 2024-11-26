@@ -40,6 +40,7 @@ type serviceProvider struct {
 	authConfig          config.AuthConfig
 	accessConfig        config.AccessConfig
 	loggerConfig        config.LoggerConfig
+	prometheusConfig    config.PrometheusConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
@@ -135,7 +136,7 @@ func (s *serviceProvider) HTTPConfig() config.HTTPConfig {
 	return s.httpConfig
 }
 
-// HTTPConfig ининициализирует конфиг http сервера
+// SwaggerConfig ининициализирует конфиг swagger
 func (s *serviceProvider) SwaggerConfig() config.HTTPConfig {
 	if s.swaggerConfig == nil {
 		cfg, err := config.NewSwaggerConfig()
@@ -147,6 +148,20 @@ func (s *serviceProvider) SwaggerConfig() config.HTTPConfig {
 	}
 
 	return s.swaggerConfig
+}
+
+// PrometheusConfig ининициализирует конфиг prometheus http-сервера
+func (s *serviceProvider) PrometheusConfig() config.PrometheusConfig {
+	if s.prometheusConfig == nil {
+		cfg, err := config.NewPrometheusConfig()
+		if err != nil {
+			log.Fatalf("failed to get prometheus config")
+		}
+
+		s.prometheusConfig = cfg
+	}
+
+	return s.prometheusConfig
 }
 
 // AuthConfig инициализирует конфиг auth сервиса
