@@ -2,8 +2,10 @@ package user
 
 import (
 	"context"
-	"log"
 
+	"github.com/solumD/auth/internal/logger"
+
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -18,11 +20,10 @@ func (s *srv) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, err
 
 		errCache := s.authCache.DeleteUser(ctx, userID)
 		if errCache != nil {
-			log.Printf("failed to delete user %d from cache: %v", userID, errCache)
+			logger.Error("failed to save user in cache", zap.Int64("userID", userID), zap.NamedError("error", errCache))
 		} else {
-			log.Printf("deleted user %d from cache", userID)
+			logger.Info("saved user in cache", zap.Int64("userID", userID))
 		}
-
 		return nil
 	})
 	if err != nil {

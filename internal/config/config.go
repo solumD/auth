@@ -12,6 +12,11 @@ type GRPCConfig interface {
 	Address() string
 }
 
+// LoggerConfig интерфейс конфига логгера
+type LoggerConfig interface {
+	Level() string
+}
+
 // PGConfig интерфейс postgres конфига
 type PGConfig interface {
 	DSN() string
@@ -32,6 +37,11 @@ type HTTPConfig interface {
 
 // SwaggerConfig интерфейс конфига swagger http-сервера
 type SwaggerConfig interface {
+	Address() string
+}
+
+// PrometheusConfig интерфейс конфига prometheus http-сервера
+type PrometheusConfig interface {
 	Address() string
 }
 

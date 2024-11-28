@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"log"
 
+	"github.com/solumD/auth/internal/logger"
 	desc "github.com/solumD/auth/pkg/auth_v1"
 )
 
@@ -14,7 +14,7 @@ func (a *API) GetAccessToken(ctx context.Context, req *desc.GetAccessTokenReques
 		return nil, err
 	}
 
-	log.Println("got access token")
+	logger.Info("got access token")
 
 	return &desc.GetAccessTokenResponse{
 		AccessToken: token,

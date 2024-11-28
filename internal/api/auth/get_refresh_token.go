@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"log"
 
+	"github.com/solumD/auth/internal/logger"
 	desc "github.com/solumD/auth/pkg/auth_v1"
 )
 
@@ -14,7 +14,7 @@ func (a *API) GetRefreshToken(ctx context.Context, req *desc.GetRefreshTokenRequ
 		return nil, err
 	}
 
-	log.Println("got new refresh token")
+	logger.Info("got new refresh token")
 
 	return &desc.GetRefreshTokenResponse{
 		RefreshToken: token,

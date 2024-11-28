@@ -10,6 +10,7 @@ import (
 	cacheMocks "github.com/solumD/auth/internal/cache/mocks"
 	"github.com/solumD/auth/internal/client/db"
 	"github.com/solumD/auth/internal/client/db/mocks"
+	"github.com/solumD/auth/internal/logger"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/repository"
 	repoMocks "github.com/solumD/auth/internal/repository/mocks"
@@ -135,6 +136,8 @@ func TestGetUser(t *testing.T) {
 			},
 		},
 	}
+
+	logger.MockInit()
 
 	for _, tt := range tests {
 		tt := tt

@@ -13,6 +13,7 @@ import (
 	txMocks "github.com/solumD/auth/internal/client/db/mocks"
 	"github.com/solumD/auth/internal/client/kafka"
 	kafkaMocks "github.com/solumD/auth/internal/client/kafka/mocks"
+	"github.com/solumD/auth/internal/logger"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/repository"
 	repoMocks "github.com/solumD/auth/internal/repository/mocks"
@@ -281,6 +282,8 @@ func TestCreateUser(t *testing.T) {
 			},
 		},
 	}
+
+	logger.MockInit()
 
 	for _, tt := range tests {
 		tt := tt

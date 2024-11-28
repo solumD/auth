@@ -8,6 +8,7 @@ import (
 
 	"github.com/solumD/auth/internal/api/user"
 	"github.com/solumD/auth/internal/api/user/errors"
+	"github.com/solumD/auth/internal/logger"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/service"
 	serviceMocks "github.com/solumD/auth/internal/service/mocks"
@@ -112,6 +113,8 @@ func TestGetUser(t *testing.T) {
 			},
 		},
 	}
+
+	logger.MockInit()
 
 	for _, tt := range tests {
 		tt := tt

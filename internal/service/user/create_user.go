@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 
+	"github.com/solumD/auth/internal/logger"
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/utils/validation"
 
 	"github.com/IBM/sarama"
+	"go.uber.org/zap"
 )
 
 const (
@@ -53,9 +54,9 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 
 		errCache := s.authCache.CreateUser(ctx, savedUser)
 		if errCache != nil {
-			log.Printf("failed to save user %d in cache: %v\n", userID, errCache)
+			logger.Error("failed to save user in cache", zap.Int64("userID", userID), zap.NamedError("error", errCache))
 		} else {
-			log.Printf("saved user %d in cache\n", userID)
+			logger.Info("saved user in cache", zap.Int64("userID", userID))
 		}
 
 		return nil
@@ -66,7 +67,7 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 
 	data, err := json.Marshal(user)
 	if err != nil {
-		log.Printf("failed to marshall data: %v\n", err)
+		logger.Error("failed to marshall data", zap.NamedError("error", err))
 	}
 
 	msg := &sarama.ProducerMessage{
@@ -76,10 +77,10 @@ func (s *srv) CreateUser(ctx context.Context, user *model.User) (int64, error) {
 
 	res := s.kafkaProducer.SendMessage(msg)
 	if res.Err != nil {
-		log.Printf("failed to send message in Kafka: %v\n", err)
+		logger.Error("failed to send message in Kafka", zap.NamedError("error", err))
 	}
 
-	log.Printf("message sent to partition %d with offset %d\n", res.Partition, res.Offset)
+	logger.Info("message sent in Kafka", zap.Int32("partition", res.Partition), zap.Int64("offset", res.Offset))
 
 	return userID, nil
 }
