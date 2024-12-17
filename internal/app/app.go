@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	circuitbreaker "github.com/solumD/auth/internal/circuit_breaker"
 	"github.com/solumD/auth/internal/closer"
 	"github.com/solumD/auth/internal/config"
 	"github.com/solumD/auth/internal/interceptor"
@@ -21,6 +21,7 @@ import (
 
 	grpcMW "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
@@ -155,6 +156,7 @@ func (a *App) initGRPCServer(ctx context.Context) {
 		grpc.Creds(creds),
 		grpc.UnaryInterceptor(
 			grpcMW.ChainUnaryServer(
+				interceptor.NewCircuitBreakerInterceptor(circuitbreaker.New()).Unary,
 				interceptor.MetricsInterceptor,
 				interceptor.LogInterceptor,
 				interceptor.ValidateInterceptor,

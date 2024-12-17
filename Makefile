@@ -116,24 +116,21 @@ gen-cert:
 
 grpc-load-test:
 	$(LOCAL_BIN)/ghz \
-		--proto api/auth_v1/auth.proto \
-		--import-paths=vendor.protogen 
-		--call auth_v1.AuthV1.Login \
-		--data '{"username": "testuser", "password":"Ab12345678"}' \
+		--proto api/user_v1/user.proto \
+		--import-paths vendor.protogen/\
+		--call user_v1.UserV1.GetUser \
+		--data '{"id": "9"}' \
 		--rps 100 \
 		--total 3000 \
-		--insecure \
-		--cacert=./tls/service/service.pem \
+		--cacert tls/service/service.pem \
 		localhost:50051
 
 grpc-error-load-test:
 	$(LOCAL_BIN)/ghz \
 		--proto api/auth_v1/auth.proto \
-		--import-paths=vendor.protogen 
 		--call auth_v1.AuthV1.Login \
-		--data '{"username": "testuser", "password":"Ab12345678"}' \
+		--data '{"username": "testuser", "password":"testpassword123"}' \
 		--rps 100 \
 		--total 3000 \
-		--insecure \
-		--cacert=./tls/service/service.pem \
+		--cacert tls/service/service.pem \
 		localhost:50051
