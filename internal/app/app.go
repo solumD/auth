@@ -160,6 +160,7 @@ func (a *App) initGRPCServer(ctx context.Context) {
 				interceptor.MetricsInterceptor,
 				interceptor.LogInterceptor,
 				interceptor.ValidateInterceptor,
+				interceptor.ErrorCodesInterceptor,
 			),
 		),
 	)

@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/solumD/auth/internal/logger"
+	"github.com/solumD/auth/internal/sys"
+	"github.com/solumD/auth/internal/sys/codes"
 	desc "github.com/solumD/auth/pkg/auth_v1"
 )
 
@@ -11,7 +13,7 @@ import (
 func (a *API) GetAccessToken(ctx context.Context, req *desc.GetAccessTokenRequest) (*desc.GetAccessTokenResponse, error) {
 	token, err := a.authService.GetAccessToken(ctx, req.GetRefreshToken())
 	if err != nil {
-		return nil, err
+		return nil, sys.NewCommonError(err.Error(), codes.Unauthenticated)
 	}
 
 	logger.Info("got access token")

@@ -2,7 +2,6 @@ package tests
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/solumD/auth/internal/api/user"
@@ -11,6 +10,8 @@ import (
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/service"
 	serviceMocks "github.com/solumD/auth/internal/service/mocks"
+	"github.com/solumD/auth/internal/sys"
+	"github.com/solumD/auth/internal/sys/codes"
 	desc "github.com/solumD/auth/pkg/user_v1"
 
 	"github.com/brianvoe/gofakeit/v7"
@@ -38,7 +39,7 @@ func TestUpdateUser(t *testing.T) {
 		email = gofakeit.Email()
 		role  = desc.Role(gofakeit.RandomInt([]int{0, 1, 2}))
 
-		serviceErr = fmt.Errorf("service error")
+		serviceErr = sys.NewCommonError("service error", codes.Aborted)
 
 		req = &desc.UpdateUserRequest{
 			Id:    id,
@@ -100,7 +101,7 @@ func TestUpdateUser(t *testing.T) {
 				req: nil,
 			},
 			want: nil,
-			err:  errors.ErrDescUserUpdateIsNil,
+			err:  sys.NewCommonError(errors.ErrDescUserUpdateIsNil.Error(), codes.InvalidArgument),
 			UserServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
 				return mock

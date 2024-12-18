@@ -2,7 +2,6 @@ package tests
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -12,6 +11,8 @@ import (
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/service"
 	serviceMocks "github.com/solumD/auth/internal/service/mocks"
+	"github.com/solumD/auth/internal/sys"
+	"github.com/solumD/auth/internal/sys/codes"
 	desc "github.com/solumD/auth/pkg/user_v1"
 
 	"github.com/brianvoe/gofakeit/v7"
@@ -39,7 +40,7 @@ func TestGetUser(t *testing.T) {
 		role      = desc.Role(gofakeit.RandomInt([]int{0, 1, 2}))
 		createdAt = time.Now()
 
-		serviceErr = fmt.Errorf("service error")
+		serviceErr = sys.NewCommonError("service error", codes.Aborted)
 
 		req = &desc.GetUserRequest{
 			Id: id,
@@ -105,7 +106,7 @@ func TestGetUser(t *testing.T) {
 				req: req,
 			},
 			want: nil,
-			err:  errors.ErrUserModelIsNil,
+			err:  sys.NewCommonError(errors.ErrUserModelIsNil.Error(), codes.Internal),
 			UserServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
 				mock.GetUserMock.Expect(ctx, id).Return(nil, nil)

@@ -2,7 +2,6 @@ package tests
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/solumD/auth/internal/api/user"
@@ -11,6 +10,8 @@ import (
 	"github.com/solumD/auth/internal/model"
 	"github.com/solumD/auth/internal/service"
 	serviceMocks "github.com/solumD/auth/internal/service/mocks"
+	"github.com/solumD/auth/internal/sys"
+	"github.com/solumD/auth/internal/sys/codes"
 	desc "github.com/solumD/auth/pkg/user_v1"
 
 	"github.com/brianvoe/gofakeit/v7"
@@ -38,7 +39,7 @@ func TestCreateUser(t *testing.T) {
 		passwordConfirm = password
 		role            = 1
 
-		serviceErr = fmt.Errorf("service error")
+		serviceErr = sys.NewCommonError("service error", codes.Aborted)
 
 		req = &desc.CreateUserRequest{
 			Name:            name,
@@ -103,7 +104,7 @@ func TestCreateUser(t *testing.T) {
 				req: nil,
 			},
 			want: nil,
-			err:  errors.ErrDescUserIsNil,
+			err:  sys.NewCommonError(errors.ErrDescUserIsNil.Error(), codes.InvalidArgument),
 			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
 				return mock
