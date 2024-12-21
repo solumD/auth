@@ -25,5 +25,5 @@ type AuthService interface {
 
 // AccessService интерфейс сервисного слоя access
 type AccessService interface {
-	Check(ctx context.Context, endpointAddress string) (*emptypb.Empty, error)
+	Check(ctx context.Context, endpointAddress string) (string, error)
 }

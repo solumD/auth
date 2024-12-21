@@ -7,9 +7,13 @@ import "google/protobuf/empty.proto";
 option go_package = "github.com/solumD/auth/pkg/access_v1;access_v1";
 
 service AccessV1 {
-    rpc Check(CheckRequest) returns (google.protobuf.Empty);
+    rpc Check(CheckRequest) returns (CheckResponse);
 }
 
 message CheckRequest {
     string endpoint_address = 1;
+}
+
+message CheckResponse {
+    string username = 1;
 }

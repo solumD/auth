@@ -2,6 +2,7 @@ package access
 
 import (
 	"github.com/solumD/auth/internal/service"
+
 	desc "github.com/solumD/auth/pkg/access_v1"
 )
 
