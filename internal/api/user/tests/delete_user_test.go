@@ -2,13 +2,14 @@ package tests
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/solumD/auth/internal/api/user"
 	"github.com/solumD/auth/internal/logger"
 	"github.com/solumD/auth/internal/service"
 	serviceMocks "github.com/solumD/auth/internal/service/mocks"
+	"github.com/solumD/auth/internal/sys"
+	"github.com/solumD/auth/internal/sys/codes"
 	desc "github.com/solumD/auth/pkg/user_v1"
 
 	"github.com/brianvoe/gofakeit/v7"
@@ -32,7 +33,7 @@ func TestDeleteUser(t *testing.T) {
 
 		id = gofakeit.Int64()
 
-		serviceErr = fmt.Errorf("service error")
+		serviceErr = sys.NewCommonError("service error", codes.Aborted)
 
 		req = &desc.DeleteUserRequest{
 			Id: id,
