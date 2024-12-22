@@ -11,11 +11,12 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type GRPCStatusInterface interface {
+type gRPCStatusInterface interface {
 	GRPCStatus() *status.Status
 }
 
-func ErrorCodesInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (res interface{}, err error) {
+// ErrorCodesInterceptor обрабатывает ошибки
+func ErrorCodesInterceptor(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (res interface{}, err error) {
 	res, err = handler(ctx, req)
 	if nil == err {
 		return res, nil
@@ -29,7 +30,7 @@ func ErrorCodesInterceptor(ctx context.Context, req interface{}, info *grpc.Unar
 		err = status.Error(code, commEr.Error())
 
 	default:
-		var se GRPCStatusInterface
+		var se gRPCStatusInterface
 		if errors.As(err, &se) {
 			return nil, se.GRPCStatus().Err()
 		} else {

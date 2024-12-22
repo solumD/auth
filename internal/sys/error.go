@@ -10,23 +10,28 @@ type commonError struct {
 	code codes.Code
 }
 
+// NewCommonError ...
 func NewCommonError(msg string, code codes.Code) *commonError {
 	return &commonError{msg, code}
 }
 
+// Error ...
 func (r *commonError) Error() string {
 	return r.msg
 }
 
+// Code ...
 func (r *commonError) Code() codes.Code {
 	return r.code
 }
 
+// IsCommonError ...
 func IsCommonError(err error) bool {
 	var ce *commonError
 	return errors.As(err, &ce)
 }
 
+// GetCommonError ...
 func GetCommonError(err error) *commonError {
 	var ce *commonError
 	if !errors.As(err, &ce) {
