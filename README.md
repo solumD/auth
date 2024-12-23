@@ -1,4 +1,8 @@
 # auth
+gRPC-сервис аутентификации и авторизации, который используется консольным клиентом: [chat-client](https://github.com/solumD/chat-client).
 
-Проект в рамках курса по разработке микросервисов от [Олега Козырева](https://www.linkedin.com/in/olezhek28/)
+Для клиента также написан gRPC-сервис чата: [chat-server](https://github.com/solumD/chat-server).
+
+### Технологии, использованные в auth:
+gRPC, jwt, Postgres, Goose, Redis, Zap, Kafka, Swagger, Prometheus, Grafana
 
