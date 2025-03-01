@@ -4,4 +4,4 @@ gRPC-сервис аутентификации и авторизации, кот
 Для клиента также написан gRPC-сервис чата: [chat-server](https://github.com/solumD/chat-server).
 
 ### Технологии, использованные в auth:
-gRPC, Docker, Docker-compose, Jwt, Postgres, Redis, Zap, Kafka, Swagger, Prometheus, Grafana
+gRPC, Docker, Docker-compose, Jwt, PostgreSQL, Redis, Zap, Kafka, Swagger, Prometheus, Grafana
